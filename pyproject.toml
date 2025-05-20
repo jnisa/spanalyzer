@@ -1,0 +1,3 @@
+[flake8:local-plugins]
+extension =
+    OTEL = spanalyzer.flake8:Flake8OTELAudit
