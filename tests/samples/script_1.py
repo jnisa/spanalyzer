@@ -2,7 +2,7 @@
 
 from opentelemetry import trace
 
-tracer = trace.get_tracer(__name__)
+tracer = trace.get_tracer('script_1_tracer')
 
 def random_function():
     """

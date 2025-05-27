@@ -44,6 +44,7 @@ class Engine:
         ]
     
     # TODO. add a function that will generate a report table with the telemetry specs like the coverage table
+    # TODO. function has been developed, it's just adding it up to the code
 
     def run(self):
         """

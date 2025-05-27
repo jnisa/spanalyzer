@@ -168,20 +168,28 @@ class TestScriptSniffer(TestCase):
     Returns:
         [int]: the difference of the two values"""
 
+        expected_docstring_3 = """Random function containing three different spans."""
+
         actual = script_sniffer.functions_list
         expected = [
             FunctionSpecs(
                 name='random_function_1',
                 docstring=expected_docstring_1,
-                start_lineno=7,
-                end_lineno=28
+                start_lineno=9,
+                end_lineno=30
             ),
             FunctionSpecs(
                 name='random_function_2',
                 docstring=expected_docstring_2,
-                start_lineno=30,
-                end_lineno=51
-            )
+                start_lineno=32,
+                end_lineno=63
+            ),
+            FunctionSpecs(
+                name='random_function_3',
+                docstring=expected_docstring_3,
+                start_lineno=65,
+                end_lineno=80
+            ),
         ]
 
         self.assertEqual(actual, expected)
