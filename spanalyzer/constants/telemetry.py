@@ -22,8 +22,6 @@ class TelemetryKeywords(str, Enum):
     START_AS_CURRENT_SPAN = "start_as_current_span"
     START_SPAN = "start_span"
     END_SPAN = "end"
-    # TODO. these two are not being captured on the observability.py file
-    # TODO. include them as functions to capture
     GET_CURRENT_SPAN = "get_current_span"
     USE_SPAN = "use_span"
     
@@ -39,12 +37,7 @@ class TelemetryKeywords(str, Enum):
     ADD_EVENTS = "add_events"
 
     # Create Instrumentation    
-    CREATE_COUNTER = "create_counter"
-    # TODO. assess if we actually want to capture the following operations
-    CREATE_UP_DOWN_COUNTER = "create_up_down_counter"
-    CREATE_HISTOGRAM = "create_histogram"
-    CREATE_OBSERVABLE_GAUGE = "create_observable_gauge"
-    CREATE_RESOURCE = "create_resource"
+    ADD_COUNTER = "add"
 
     # Instrumentation
     INSTRUMENT = "instrument"

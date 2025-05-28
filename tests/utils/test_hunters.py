@@ -5,12 +5,15 @@ from unittest import TestCase
 from ast import Dict
 from ast import Name
 from ast import Call
+from ast import Expr
+from ast import keyword
 from ast import Constant
 from ast import Attribute
 
 from spanalyzer.utils.hunters import add_events_hunter
 from spanalyzer.utils.hunters import set_attributes_hunter
 from spanalyzer.utils.hunters import value_extractor
+from spanalyzer.utils.hunters import counter_hunter
 
 class TestHunters(TestCase):
 
@@ -148,5 +151,64 @@ class TestHunters(TestCase):
 
         actual = add_events_hunter(test_event)
         expected = None
+
+        self.assertEqual(actual, expected)
+
+    def test_counter_hunter_basic(self):
+        """
+        Description: check if we can capture the counter operator from a code sample containing one
+        counter operator.
+        """
+
+        test_counter = Expr(
+            value=Call(
+                func=Attribute(
+                    value=Name(id='test_counter'),
+                    attr='add'
+                ),
+                args=[
+                    Constant(value=1)
+                ],
+                keywords=[
+                    keyword(
+                        arg='attributes',
+                        value=Dict(
+                            keys=[Constant(value='key1')],
+                            values=[Constant(value='value1')]
+                        )
+                    )
+                ]
+            )
+        )
+
+        actual = counter_hunter(test_counter)
+        expected = ['test_counter', [1], [{'key1': 'value1'}]]
+
+        self.assertEqual(actual, expected)
+
+    def test_counter_hunter_complex(self):
+        """
+        Description: check if we can capture the counter operator from a code sample containing a new
+        increment is created with no attributes.
+        """
+
+        test_counter = Expr(
+            value=Call(
+                func=Attribute(
+                    value=Name(id='test_counter'),
+                    attr='add'
+                ),
+                args=[
+                    Constant(value=2),
+                    Dict(
+                        keys=[Constant(value='key1')],
+                        values=[Constant(value='value1')]
+                    )
+                ]
+            )
+        )
+
+        actual = counter_hunter(test_counter)
+        expected = ['test_counter', [2, {'key1': 'value1'}], None]
 
         self.assertEqual(actual, expected)

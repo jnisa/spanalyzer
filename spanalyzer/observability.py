@@ -5,19 +5,19 @@ from typing import Dict
 # TODO. to remove later on - probably
 import ast
 from ast import Call
-from ast import Name
-from ast import With
+from ast import Expr
 from ast import Dict
-from ast import Attribute
 from ast import Constant
 from ast import NodeVisitor
 
-from spanalyzer.utils.hunters import set_attributes_hunter
 from spanalyzer.utils.hunters import add_events_hunter
+from spanalyzer.utils.hunters import set_attributes_hunter
+from spanalyzer.utils.hunters import counter_hunter
 
 from spanalyzer.constants.telemetry import TelemetryKeywords
 
 # TODO. highlight this class will receive the code of a script at a time, and not multiple scripts
+# TODO. improve the docs of this class
 class TelemetryDetector(NodeVisitor):
     """
     This class will be used to sniff the telemetry calls in a script.
@@ -37,9 +37,7 @@ class TelemetryDetector(NodeVisitor):
         self.events = []
         self.exceptions = False
         self.ends = False
-        self.metrics = []
-        self.metric_instruments = []
-        self.metric_operations = []
+        self.counter = []
 
     # TODO. this is python specific, we would need to change this if it was meant to be used for Java
     def call_switcher(self, call_type: str, node: Call):
@@ -56,6 +54,7 @@ class TelemetryDetector(NodeVisitor):
 
         is_constant = lambda node: any(isinstance(arg, Constant) for arg in node.args)
 
+        # TODO. add the lineno to the nodes at each entry
         match call_type:
             case TelemetryKeywords.GET_TRACER:
                 # TODO. evaluate the following code
@@ -96,31 +95,37 @@ class TelemetryDetector(NodeVisitor):
             case TelemetryKeywords.RECORD_EXCEPTION:
                 self.exceptions = True
 
-            # TODO. adapt this code to capture all the counters
-            # case TelemetryKeywords.CREATE_SPAN:
-            #     pass
+            case TelemetryKeywords.ADD_COUNTER:
+                self.counter.append(counter_hunter(node))
 
         self.generic_visit(node)
-            
 
-    # TODO. adjust the documentation of this method
     def run(self, node: Call) -> Dict:
         """
-        ADD A DESCRIPTION HERE
+        Method that can be seen as the heart of the TelemetryDetector class.
+
+        This method will be filtering the type of nodes that are of interest, and will be then calling
+        the switcher method - that captures all the telemetry details spanalyzer is looking for.
+
+        Args:
+            node [Call]: code node to be evaluated
+
+        Returns:
+            Dict: dictionary containing the telemetry details
         """
 
-        # TODO. this might be where we place the iteration over the script provided
-
         for node in ast.walk(node):
-            # TODO. the following code is not making sense as it's not checking if the node is a Call
-            if isinstance(node, Call):
-                self.call_switcher(node.func.attr, node)
-            
-            else:
-                # TODO. this might need some further consideration
+
+            try:
+                if isinstance(node, Call):
+                    self.call_switcher(node.func.attr, node)
+                
+                if isinstance(node, Expr):
+                    self.call_switcher(node.value.func.attr, node)
+
+            except:
                 pass
 
-        # TODO. check if this is the final structure of the report
         return {
             "tracers": list(self.tracers),
             "spans": list(self.spans),
@@ -128,7 +133,5 @@ class TelemetryDetector(NodeVisitor):
             "events": self.events,
             "exceptions": self.exceptions,
             "ends": self.ends,
-            "metrics_imports": self.metrics,
-            "metric_instruments": self.metric_instruments,
-            "metric_operations": self.metric_operations
+            "counter": self.counter,
         }

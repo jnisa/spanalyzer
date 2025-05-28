@@ -3,8 +3,16 @@
 import time
 
 from opentelemetry import trace
+from opentelemetry import metrics
 
 tracer = trace.get_tracer(__name__)
+
+# Create a meter
+meter = metrics.get_meter(__name__)
+request_counter = meter.create_counter(
+    "request_counter",
+    description="Counts the number of requests"
+)
 
 def random_function_1(val1: int, val2: int) -> int:
     """
@@ -74,7 +82,28 @@ def random_function_3():
             {'name': 'operation_started', 'timestamp': time.time(), 'description': 'Load User from DB'},
             {'name': 'operation_completed', 'timestamp': time.time(), 'description': 'User loaded from DB'}
         ])
-        pass
 
-        with tracer.start_as_current_span('call_billing_services'):
-            pass
+    last_function_span = tracer.start_span('last_function')
+
+def random_function_4():
+    """
+    Random function demonstrating counter usage.
+    """
+
+    # with tracer.start_as_current_span('random_function_4') as span:
+    with tracer.use_span('last_function') as span:
+        request_counter.add(1)
+
+        request_counter.add(1, {
+            "endpoint": "/api/v1",
+            "method": "GET"
+        })
+        
+        request_counter.add(2, attributes={
+            "endpoint": "/api/v1",
+            "method": "POST",
+            "status": "success"
+        })
+        
+        span.set_attribute("counter_updated", True)
+        return True

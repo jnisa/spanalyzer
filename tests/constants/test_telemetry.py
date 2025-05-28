@@ -25,11 +25,7 @@ class TestTelemetryKeywords(TestCase):
             "record_exception",
             "add_event",
             "add_events",
-            "create_counter",
-            "create_up_down_counter",
-            "create_histogram",
-            "create_observable_gauge",
-            "create_resource",
+            "add",
             "instrument"
         }
 

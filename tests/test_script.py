@@ -169,26 +169,33 @@ class TestScriptSniffer(TestCase):
         [int]: the difference of the two values"""
 
         expected_docstring_3 = """Random function containing three different spans."""
+        expected_docstring_4 = """Random function demonstrating counter usage."""
 
         actual = script_sniffer.functions_list
         expected = [
             FunctionSpecs(
                 name='random_function_1',
                 docstring=expected_docstring_1,
-                start_lineno=9,
-                end_lineno=30
+                start_lineno=17,
+                end_lineno=38
             ),
             FunctionSpecs(
                 name='random_function_2',
                 docstring=expected_docstring_2,
-                start_lineno=32,
-                end_lineno=63
+                start_lineno=40,
+                end_lineno=71
             ),
             FunctionSpecs(
                 name='random_function_3',
                 docstring=expected_docstring_3,
-                start_lineno=65,
-                end_lineno=80
+                start_lineno=73,
+                end_lineno=86
+            ),
+            FunctionSpecs(
+                name='random_function_4',
+                docstring=expected_docstring_4,
+                start_lineno=88,
+                end_lineno=109
             ),
         ]
 
@@ -218,10 +225,6 @@ class TestScriptSniffer(TestCase):
 
         script_sniffer = ScriptSniffer(test_script)
         script_sniffer.run()
-
-        # Define the expected docstrings
-        expected_docstring_2 = """Simulate async data processing."""
-        expected_docstring_3 = """Async function that fetches data with telemetry."""
 
         actual = script_sniffer.functions_list
         expected = [
