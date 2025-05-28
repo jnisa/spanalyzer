@@ -53,6 +53,14 @@ class Engine:
         Where all of the routines will be executed - i.e. the script sniffing, the telemetry specs capture, etc.
         """
 
+
+        # 1. Sniff the scripts
         self.script_sniffer.run()
+
+        # 2. Capture the telemetry specs
+
+        # 3. Conciliate the telemetry with the script results
+
+        # 4. Generate the report
 
         return self.script_sniffer.functions_list

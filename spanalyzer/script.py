@@ -87,8 +87,6 @@ class ScriptSniffer(NodeVisitor):
             docstring=self._has_docstring(node),
             start_lineno=node.lineno,
             end_lineno=node.end_lineno
-            # TODO. add the telemetry specs of the call
-            # report=TelemetryReport()
         )
 
         self.functions_list.append(function_specs)

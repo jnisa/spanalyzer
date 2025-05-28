@@ -208,3 +208,41 @@ class TestScriptSniffer(TestCase):
         expected = []
 
         self.assertEqual(actual, expected)
+
+    def test_async_function_def(self):
+        """
+        Description: Test that the sniffer can handle async functions with telemetry.
+        """
+
+        test_script = os.path.join(os.path.dirname(__file__), 'samples', 'script_4.py')        
+
+        script_sniffer = ScriptSniffer(test_script)
+        script_sniffer.run()
+
+        # Define the expected docstrings
+        expected_docstring_2 = """Simulate async data processing."""
+        expected_docstring_3 = """Async function that fetches data with telemetry."""
+
+        actual = script_sniffer.functions_list
+        expected = [
+            FunctionSpecs(
+                name='fetch_mock_data',
+                docstring="""Simulate async data fetch with delay.""",
+                start_lineno=12,
+                end_lineno=15
+            ),
+            FunctionSpecs(
+                name='process_mock_data',
+                docstring="""Simulate async data processing.""",
+                start_lineno=17,
+                end_lineno=20
+            ),
+            FunctionSpecs(
+                name='async_fetch_data',
+                docstring="""Async function that fetches data with telemetry.""",
+                start_lineno=22,
+                end_lineno=41
+            )
+        ]
+
+        self.assertEqual(actual, expected)

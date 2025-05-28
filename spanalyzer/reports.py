@@ -12,6 +12,7 @@ class ReportSymbols:
 
 # TODO. not sure if we want to include a landing zone for the repoert to be stored on
 # TODO. update the output, a function can have multiple spans
+# TODO. this function needs to navigate through the 
 def detailed_report(codebase_path: str) -> dict:
     """
     Generate a report for the given codebase.

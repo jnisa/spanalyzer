@@ -57,8 +57,6 @@ class TestReports(TestCase):
 test_program.py            ✓        ✓         ✓          ✓         ✓             100%       
 --------------------------------------------------------------------------------------------"""
 
-        breakpoint()
-
         self.compare_terminal_reports(actual, expected)
 
     def test_terminal_report_complex(self):

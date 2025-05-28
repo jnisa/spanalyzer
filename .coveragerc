@@ -1,0 +1,12 @@
+[run]
+source = .
+omit = tests/**,setup.py
+
+[report]
+omit = 
+    tests/**
+    setup.py
+    **/__init__.py
+    /Users/joao.nisa/Desktop/Projects/personal/spanalyzer/samples/*
+    /opt/homebrew/*
+    /Users/joao.nisa/Desktop/Projects/personal/spanalyzer/tree/*
