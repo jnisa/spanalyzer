@@ -1,3 +1,7 @@
-[flake8:local-plugins]
-extension =
-    OTEL = spanalyzer.flake8:Flake8OTELAudit
+[project]
+name = "spanalyzer"
+version = "0.1.0"
+dependencies = []
+
+[project.scripts]
+spanalyzer = "spanalyzer.cli:main"

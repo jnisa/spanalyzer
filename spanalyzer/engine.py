@@ -3,25 +3,39 @@
 import os
 
 from typing import List
+from typing import Dict
 
 from pathlib import Path
 
 from spanalyzer.script import ScriptSniffer
+
 from spanalyzer.constants.exceptions import ExcludedPaths
+
+from spanalyzer.reports import terminal_report
+from spanalyzer.reports import detailed_report
 
 class Engine:
     """
-    Class containing the engine that will be capturing all the functions in a certain folder.
+    Class containing the engine that will be capturing all the opentelemetry operations in a certain folder.
 
     This class will be used to navigate through a nested folder structure - like python projects i.e. 
-    python packages, modules, etc. -, an capture all the functions in the scripts.
+    python packages, modules, etc. -, and capture all the opentelemetry operations in the scripts.
 
-    Along with that, it will also capture the telemetry specs of these functions, to generate a telemetry
+    Along with that, it will also capture the telemetry specs of these operations, to generate a telemetry
     report later on.
 
     Args:
         folder_path [str]: the path to the folder containing the scripts to be analyzed
+        report_type [str]: the type of report to be generated (the options are 'basic' and 'detailed')
     """
+
+    def __init__(self, folder_path: str, report_type: str):
+        """
+        Initialize the engine.
+        """
+
+        self.folder_path = folder_path
+        self.report_type = report_type
 
     def _list_python_scripts(self, folder_path: Path, excluded_paths: set[str] = ExcludedPaths.values()) -> List[str]:
         """
@@ -43,24 +57,52 @@ class Engine:
             not any(excluded_path in os.path.join(root, file) for excluded_path in excluded_paths)
         ]
     
-    # TODO. add a function that will generate a report table with the telemetry specs like the coverage table
-    # TODO. function has been developed, it's just adding it up to the code
+    def _switch_report(self, report_data: Dict):
+        """
+        Switch the report type.
+
+        Args:
+            report_data [Dict]: the data to be reported
+
+        Returns:
+            [Dict]: the report data
+        """
+
+        match self.report_type:
+            case 'basic':
+                return terminal_report(report_data)
+
+            # TODO. needs some work            
+            case 'detailed':
+                return detailed_report(report_data)
+            
+            case _:
+                raise ValueError(f"Invalid report type: {self.report_type}")
 
     def run(self):
         """
         Heart of the operation.
 
         Where all of the routines will be executed - i.e. the script sniffing, the telemetry specs capture, etc.
+
+        Through this method the engine will be performing the following operation by this order:
+        1. Obtain the list of python scripts in the folder;
+        2. Sniff the scripts to capture the functions;
+        3. Capture the telemetry specs of these functions;
+        4. Conciliate the telemetry with the script results;
+        5. Generate the report.
         """
 
 
-        # 1. Sniff the scripts
-        self.script_sniffer.run()
+        for script in self._list_python_scripts(self.folder_path):
 
-        # 2. Capture the telemetry specs
+            functions_list = self.script_sniffer.run()
 
-        # 3. Conciliate the telemetry with the script results
+            # 2. Capture the telemetry specs
+            telemetry_specs = self.telemetry_sniffer.run()
 
-        # 4. Generate the report
-
-        return self.script_sniffer.functions_list
+            # 3. Conciliate the telemetry with the script results
+            conciliated_data = self.conciliate_data(functions_list, telemetry_specs)
+            
+            # 4. Generate the report
+            report = self._switch_report(conciliated_data)
