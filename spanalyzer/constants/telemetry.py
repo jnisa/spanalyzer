@@ -2,7 +2,23 @@
 
 from enum import Enum
 
-# TODO. add imports to the list of keywords
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
+from dataclasses import dataclass
+
+# TODO. add a conversion to the telemetry call to a dictionary
+# TODO. this will then be used on the report layer
+@dataclass
+class TelemetryCall:
+    """Represents a telemetry operation with its details."""
+    func: str
+    line_number: int
+    args: Optional[List[Any]] = None
+    keywords: Optional[Dict[str, Any]] = None
+
 class TelemetryKeywords(str, Enum):
     """
     Enum containing OpenTelemetry trace keywords.
@@ -11,7 +27,6 @@ class TelemetryKeywords(str, Enum):
     - Tracer Setup
     - Span Context
     - Attributes
-    - Error Handling
     - Events
     """
     
@@ -21,7 +36,8 @@ class TelemetryKeywords(str, Enum):
     # Span Context
     START_AS_CURRENT_SPAN = "start_as_current_span"
     START_SPAN = "start_span"
-    END_SPAN = "end"
+    # TODO. add later on
+    # END_SPAN = "end"
     GET_CURRENT_SPAN = "get_current_span"
     USE_SPAN = "use_span"
     
@@ -30,7 +46,8 @@ class TelemetryKeywords(str, Enum):
     SET_ATTRIBUTES = "set_attributes"
     
     # Exceptions and Error Capturing
-    RECORD_EXCEPTION = "record_exception"
+    # TODO. add later on
+    # RECORD_EXCEPTION = "record_exception"
 
     # Events
     ADD_EVENT = "add_event"
@@ -49,3 +66,17 @@ class TelemetryKeywords(str, Enum):
         """
 
         return {member.value for member in cls}
+    
+    @classmethod
+    def get_attributes_structure(cls) -> Dict[str, List]:
+        """
+        Get the attributes structure for a given keyword.
+        """
+
+        return {
+            'tracers': [],
+            'spans': [],
+            'attributes': [],
+            'events': [],
+            'counter': [],
+        }

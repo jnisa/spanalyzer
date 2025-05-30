@@ -1,45 +1,79 @@
 # Script containing the Telemetry Detector
 
 from typing import Dict
+from typing import Optional
 
-# TODO. to remove later on - probably
-import ast
 from ast import Call
 from ast import Expr
 from ast import Dict
 from ast import Constant
 from ast import NodeVisitor
 
-from spanalyzer.utils.hunters import add_events_hunter
-from spanalyzer.utils.hunters import set_attributes_hunter
-from spanalyzer.utils.hunters import counter_hunter
+from ast import walk
 
+from spanalyzer.utils.hunters import ast_extractor
+
+from spanalyzer.utils.operations import remove_call_duplicates
+
+from spanalyzer.constants.telemetry import TelemetryCall
 from spanalyzer.constants.telemetry import TelemetryKeywords
 
-# TODO. highlight this class will receive the code of a script at a time, and not multiple scripts
-# TODO. improve the docs of this class
 class TelemetryDetector(NodeVisitor):
     """
     This class will be used to sniff the telemetry calls in a script.
 
-    It will be used to capture the telemetry calls in a script and return the list of telemetry calls.
+    It operates on single script at the time, and produces an output indicating if there's any telemetry
+    call in the script.
+
+    The telemetry calls at this stage are the ones that are commonly used (i.e. tracers, spans, attributes,
+    events, exceptions, span ends, counters).
     """
 
     def __init__(self):
-        
-        # TODO. not sure if we want to have multiple sets and lists as it's not memory efficient
-        # TODO. some of these might need to be converted into dictionaries as we'll might want to store
-        # the lineno
-        
-        self.tracers = []
-        self.spans = []
-        self.attributes = []
-        self.events = []
-        self.exceptions = False
-        self.ends = False
-        self.counter = []
+        """
+        Initialize the TelemetryDetector.
 
-    # TODO. this is python specific, we would need to change this if it was meant to be used for Java
+        This will initialize the output structure, and the operations that are of interest.
+        """
+
+        self.output = TelemetryKeywords.get_attributes_structure()
+
+        self.span_operations = {
+            TelemetryKeywords.START_SPAN,
+            TelemetryKeywords.START_AS_CURRENT_SPAN,
+            TelemetryKeywords.USE_SPAN
+        }
+
+        self.attribute_operations = {
+            TelemetryKeywords.SET_ATTRIBUTE,
+            TelemetryKeywords.SET_ATTRIBUTES
+        }
+
+        self.event_operations = {
+            TelemetryKeywords.ADD_EVENT,
+            TelemetryKeywords.ADD_EVENTS
+        }
+
+
+    def _extract_name_from_args(self, node: Call) -> Optional[str]:
+        """
+        Extract name from first argument.
+        
+        Args:
+            node [Call]: code node to be evaluated
+
+        Returns:
+            Optional[str]: name of the telemetry call
+        """
+
+        if not node.args:
+            return None
+        
+        arg = node.args[0]
+        
+        return arg.value if isinstance(arg, Constant) else arg.id
+
+
     def call_switcher(self, call_type: str, node: Call):
         """
         This function will work as a switch to determine the type of call being made.
@@ -52,51 +86,46 @@ class TelemetryDetector(NodeVisitor):
             node [Call]: code node to be evaluated
         """
 
-        is_constant = lambda node: any(isinstance(arg, Constant) for arg in node.args)
-
-        # TODO. add the lineno to the nodes at each entry
         match call_type:
             case TelemetryKeywords.GET_TRACER:
-                # TODO. evaluate the following code
-                obj = node.args[0].value if is_constant(node) else node.args[0].id
-                self.tracers.append(obj)
+                if name := self._extract_name_from_args(node):
+                    self.output['tracers'].append(TelemetryCall(
+                        func=name,
+                        line_number=node.lineno
+                    ))
 
-            case TelemetryKeywords.START_SPAN:
-                # TODO. evaluate the following code
-                obj = node.args[0].value if is_constant(node) else node.args[0].id
-                self.spans.append(obj)
+            case _ if call_type in self.span_operations:
+                if name := self._extract_name_from_args(node):
+                    self.output['spans'].append(TelemetryCall(
+                        func=name,
+                        line_number=node.lineno,
+                    ))
 
-            case TelemetryKeywords.START_AS_CURRENT_SPAN:
-                # TODO. evaluate the following code
-                obj = node.args[0].value if is_constant(node) else node.args[0].id
-                self.spans.append(obj)
-                # TODO. if one of the arguments is end_on_exit then we need to set the ends flag to True
+            case _ if call_type in self.attribute_operations:
+                # breakpoint()
+                self.output['attributes'].append(TelemetryCall(
+                    func=call_type,
+                    line_number=node.lineno,
+                    args=ast_extractor(node)
+                ))
 
-            case TelemetryKeywords.USE_SPAN:
-                # TODO. evaluate the following code
-                obj = node.args[0].value if is_constant(node) else node.args[0].id
-                self.spans.append(obj)
-
-            case TelemetryKeywords.END_SPAN:
-                self.ends = True
-            
-            case TelemetryKeywords.SET_ATTRIBUTE:
-                self.attributes.append(set_attributes_hunter(node.args))
-
-            case TelemetryKeywords.SET_ATTRIBUTES:
-                self.attributes.append(set_attributes_hunter(node.args))
-
-            case TelemetryKeywords.ADD_EVENT:
-                self.events.append(add_events_hunter(node.args))
-
-            case TelemetryKeywords.ADD_EVENTS:
-                self.events.append(add_events_hunter(node.args))
-
-            case TelemetryKeywords.RECORD_EXCEPTION:
-                self.exceptions = True
+            case _ if call_type in self.event_operations:
+                args = ast_extractor(node) if isinstance(node, Expr) else ast_extractor(node.args)
+                
+                # breakpoint()
+                
+                self.output['events'].append(TelemetryCall(
+                    func=call_type,
+                    line_number=node.lineno,
+                    args=args
+                ))
 
             case TelemetryKeywords.ADD_COUNTER:
-                self.counter.append(counter_hunter(node))
+                self.output['counter'].append(TelemetryCall(
+                    func=call_type,
+                    line_number=node.lineno,
+                    args=ast_extractor(node)
+                ))
 
         self.generic_visit(node)
 
@@ -114,7 +143,7 @@ class TelemetryDetector(NodeVisitor):
             Dict: dictionary containing the telemetry details
         """
 
-        for node in ast.walk(node):
+        for node in walk(node):
 
             try:
                 if isinstance(node, Call):
@@ -126,12 +155,10 @@ class TelemetryDetector(NodeVisitor):
             except:
                 pass
 
+        # return self.output
+
         return {
-            "tracers": list(self.tracers),
-            "spans": list(self.spans),
-            "attributes": self.attributes,
-            "events": self.events,
-            "exceptions": self.exceptions,
-            "ends": self.ends,
-            "counter": self.counter,
+            key: remove_call_duplicates(val) 
+            for key, val in self.output.items() 
+            if isinstance(val, list) and any(isinstance(item, TelemetryCall) for item in val)
         }

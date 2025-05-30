@@ -11,8 +11,6 @@ from ast import FunctionDef
 
 from collections import namedtuple
 
-from spanalyzer.observability import TelemetryDetector
-
 # TODO. add the telemetry specs of the call
 FunctionSpecs = namedtuple('FunctionSpecs', ['name', 'docstring', 'start_lineno', 'end_lineno'])
 

@@ -1,154 +1,106 @@
 # Script containing the functions that will be used to capture the telemetry resources
 
+from ast import AST
 from ast import Call
 from ast import Name
 from ast import Expr
+from ast import Dict
+from ast import List
 from ast import Constant
-from ast import Dict as AstDict
+from ast import Attribute
+from ast import Subscript
 
-from typing import List
 from typing import Union
-from typing import Dict
+from typing import Optional
+from typing import Any
 
-def value_extractor(arg: Union[Constant, Name]) -> str:
+# TODO. add more documentation to this method
+def ast_extractor(node: AST) -> Optional[Union[str, dict, list, Any]]:
     """
-    Extract value from AST node.
+    Universal AST node value extractor.
 
     Args:
-        arg: AST node to extract value from
+        node: Any AST node
 
     Returns:
-        Value from AST node
+        Extracted value based on node type:
+        - Constant: its value
+        - Name: its id
+        - Attribute: extracted value with attr
+        - List: list of extracted values
+        - Dict: dictionary of extracted key-value pairs
+        - Call: function name and args
+        - Expr: function name and args
+        - Subscript: extracted value
+        - None: for unsupported nodes
 
     Example:
-        >>> value_extractor(Constant(value='value'))
-        'value'
+        >>> ast_extractor(Constant(value='test'))
+        'test'
+        >>> ast_extractor(Attribute(value=Name(id='obj'), attr='method'))
+        'obj.method'
     """
 
-    match arg:
+    match node:
         case Constant():
-            return arg.value
-
+            return node.value
+            
         case Name():
-            return arg.id
+            return node.id
+            
+        case Attribute():
+            base = ast_extractor(node.value)
+            return f"{base}.{node.attr}" if base else node.attr
+            
+        case List():
+            return [ast_extractor(elt) for elt in node.elts]
+            
+        case Dict():
+            return {
+                ast_extractor(k): ast_extractor(v)
+                for k, v in zip(node.keys, node.values)
+            }
+            
+        case Call():
+            call_data = {
+                'func': ast_extractor(node.func),
+                'args': [ast_extractor(arg) for arg in node.args]
+            }
 
-        case AstDict():
-            keys_lst = [k.value if isinstance(k, Constant) else k.id for k in arg.keys]
-            values_lst = [v.value if isinstance(v, Constant) else v.id for v in arg.values]
-            return dict(zip(keys_lst, values_lst))
+            try:
+                keywords = {
+                    kw.arg: ast_extractor(kw.value)
+                    for kw in node.keywords
+                }
+
+                if keywords:
+                    call_data['keywords'] = keywords
+            
+            except (AttributeError, TypeError):
+                pass
+            
+            return call_data
         
+        case Expr():
+            expr_data = {
+                'func': ast_extractor(node.value.func),
+                'args': [ast_extractor(arg) for arg in node.value.args]
+            }
+            
+            try:
+                keywords = {
+                    kw.arg: ast_extractor(kw.value)
+                    for kw in node.value.keywords
+                }
+                if keywords:
+                    expr_data['keywords'] = keywords
+            except (AttributeError, TypeError):
+                pass
+            
+            return expr_data
+        
+        case Subscript():
+            return ast_extractor(node.value)
+                
         case _:
             return None
-
-
-def set_attributes_hunter(attributes_lst: List[Union[Name, Constant]]) -> List[Union[Dict[str, str], str]]:
-    """
-    Capture OpenTelemetry set_attribute/set_attributes operator details.
-
-    Args:
-        attributes_lst: List of AST Call nodes containing attribute operations
-
-    Returns:
-        List of attribute values or key-value pairs
-
-    Example:
-        >>> calls_lst = [
-            Dict(
-                keys=[Constant(value='key1'), Constant(value='key2')],
-                values=[Constant(value='value1'), Constant(value='value2')]
-            )
-        ]
-        >>> attrs = set_attribute_hunter(calls_lst)
-        >>> attrs
-        {'key1': 'value1', 'key2': 'value2'}
-    """
-
-    if len(attributes_lst) == 2:
-        return {value_extractor(attributes_lst[0]): value_extractor(attributes_lst[1])}
-
-    if any(isinstance(attr, AstDict) for attr in attributes_lst):
-        return value_extractor(attributes_lst[0])
-
-    else:
-        return None
-
-def add_events_hunter(events_lst: List[Union[Name, Constant]]) -> List[Union[Dict[str, str], str]]:
-    """
-    Capture OpenTelemetry add_event/add_events operator details.
-
-    Args:
-        events_lst: List of AST Call nodes containing add_event operations
-
-    Returns:
-        List of event details
-
-    Example:
-        >>> calls_lst = [
-            Name(id='event1'),
-            Dict(
-                keys=[Constant(value='key1')],
-                values=[Constant(value='value1')]
-            )
-        ]
-        >>> events = add_event_hunter(calls_lst)
-        >>> events
-        ['event1', {'key1': 'value1'}]
-    """
-
-    if not events_lst:
-        return None
-
-    return [
-        value_extractor(event)
-        for event in events_lst
-    ]
-
-def counter_hunter(counter_incrs: Expr) -> List[Union[str, int, Dict[str, str]]]:
-    """
-    Capture OpenTelemetry counter increment details.
-
-    Args:
-        counter_lst: List of AST Call nodes containing counter operations
-
-    Returns:
-        List of counter details
-
-    Example:
-        >>> counter_iteration = Expr(
-                value=Call(
-                    func=Attribute(
-                        value=Name(id='counter'),
-                        attr='add'
-                    ),
-                    args=[
-                        Constant(value=1)
-                    ],
-                    keywords=[
-                        {
-                            'arg': 'attributes',
-                            'value': Dict(
-                                keys=[Constant(value='key1')],
-                                values=[Constant(value='value1')]
-                            )
-                        }
-                    ]
-                )
-        >>> incs = counter_increment_hunter(counter_iteration)
-        >>> incs
-        ['counter', [1], {'key1': 'value1'}]
-    """
-
-    counter_id = value_extractor(counter_incrs.value.func.value)
-    counter_incr = [value_extractor(arg) for arg in counter_incrs.value.args]
-
-    try:
-        counter_attrs = [
-            value_extractor(kw.value)
-            for kw in counter_incrs.value.keywords
-            if kw.arg == 'attributes'
-        ]
-
-    except:
-        counter_attrs = None
-
-    return [counter_id, counter_incr, counter_attrs]

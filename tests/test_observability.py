@@ -7,6 +7,8 @@ import ast
 from unittest import TestCase
 
 from spanalyzer.observability import TelemetryDetector
+from spanalyzer.constants.telemetry import TelemetryCall
+
 
 def read_script(path: str) -> str:
     """
@@ -46,29 +48,21 @@ class TestTelemetrySniffer(TestCase):
         """
         
         detector = TelemetryDetector()
-        detector.run(self.code_1)
-
-        actual = [
-            detector.tracers,
-            detector.spans,
-            detector.attributes,
-            detector.events,
-            detector.exceptions,
-            detector.ends,
-            detector.counter,
-        ]
-        expected = [
-            ['script_1_tracer'],
-            ['random_function'],
-            [
-                {'attribute_1': 'value_1'},
-                {'attribute_2': 'value_2'},
+        
+        
+        actual = detector.run(self.code_1)
+        expected = {
+            'tracers': [
+                TelemetryCall(func='script_1_tracer', line_number=5, args=None)
             ],
-            [],
-            False,
-            False,
-            [],
-        ]
+            'spans': [
+                TelemetryCall(func='random_function', line_number=14, args=None)
+            ],
+            'attributes': [
+                TelemetryCall(func='set_attribute', line_number=15, args={'func': 'span.set_attribute', 'args': ['attribute_1', 'value_1']}),
+                TelemetryCall(func='set_attribute', line_number=16, args={'func': 'span.set_attribute', 'args': ['attribute_2', 'value_2']})
+            ],
+        }
 
         self.assertEqual(actual, expected)
 
@@ -79,17 +73,8 @@ class TestTelemetrySniffer(TestCase):
         """
         
         detector = TelemetryDetector()
-        detector.run(self.code_2)
 
-        actual = [
-            detector.tracers,
-            detector.spans,
-            detector.attributes,
-            detector.events,
-            detector.exceptions,
-            detector.ends,
-            detector.counter,
-        ]
+        actual = detector.run(self.code_2)
         expected = [
             ['__name__'], 
             [
@@ -152,6 +137,94 @@ class TestTelemetrySniffer(TestCase):
             ],
         ]
 
+        expected = {
+            'tracers': [
+                TelemetryCall(func='__name__', line_number=8, args=None)
+            ],
+            'spans': [
+                TelemetryCall(func='random_function_2', line_number=57, args=None, keywords=None),
+                TelemetryCall(func='last_function', line_number=86, args=None, keywords=None),
+                TelemetryCall(func='random_function_1', line_number=34, args=None, keywords=None),
+                TelemetryCall(func='random_function_3', line_number=78, args=None, keywords=None),
+                TelemetryCall(func='load_user_from_db', line_number=80, args=None, keywords=None),
+                TelemetryCall(func='last_function', line_number=94, args=None, keywords=None),
+            ],
+            'attributes': [
+                TelemetryCall(func='set_attributes', line_number=58, args={'func': 'span.set_attributes', 'args': [{'input_1': 'val1', 'input_2': 'val2'}]}),
+                TelemetryCall(func='set_attribute', line_number=35, args={'func': 'span.set_attribute', 'args': ['val1', 'val1']}),
+                TelemetryCall(func='set_attribute', line_number=36, args={'func': 'span.set_attribute', 'args': ['val2', 'val2']}),
+                TelemetryCall(func='set_attribute', line_number=108, args={'func': 'span.set_attribute', 'args': ['counter_updated', True]}),
+            ],
+            'events': [
+                TelemetryCall(func='add_event', line_number=65, args={'func': 'span.add_event', 'args': [
+                    'calculation_completed',
+                    {
+                        'operation': 'subtraction',
+                        'result': 'result'
+                    }
+                ]}),
+                TelemetryCall(func='add_events', line_number=81, args={
+                    'func': 'load_user_span.add_events', 'args': [[
+                        {
+                            'name': 'operation_started',
+                            'timestamp': {
+                                'func': 'time.time',
+                                'args': [],
+                            },
+                            'description': 'Load User from DB'
+                        },
+                        {
+                            'name': 'operation_completed',
+                            'timestamp': {
+                                'func': 'time.time',
+                                'args': [],
+                            },
+                            'description': 'User loaded from DB'
+                        }
+                    ]]
+                }),
+            ],
+            'counter': [
+                TelemetryCall(
+                    func='add', 
+                    line_number=95, 
+                    args={
+                        'func': 'request_counter.add',
+                        'args': [1], 
+                    },
+                    keywords=None
+                ),
+                TelemetryCall(
+                    func='add',
+                    line_number=97,
+                    args={
+                        'func': 'request_counter.add',
+                        'args': [
+                            1, 
+                            {'endpoint': '/api/v1', 'method': 'GET'}
+                        ],
+                    },
+                    keywords=None
+                ),
+                TelemetryCall(
+                    func='add',
+                    line_number=102,
+                    args={
+                        'func': 'request_counter.add',
+                        'args': [2], 
+                        'keywords': {
+                            'attributes': {
+                                'endpoint': '/api/v1', 
+                                'method': 'POST', 
+                                'status': 'success'
+                            }
+                        }
+                    },
+                    keywords=None
+                )
+            ]
+        }
+
         self.assertEqual(actual, expected)
 
     def test_telemetry_detector_exception(self):
@@ -161,28 +234,61 @@ class TestTelemetrySniffer(TestCase):
         """
 
         detector = TelemetryDetector()
-        detector.run(self.code_4)
 
-        actual = [
-            detector.tracers,
-            detector.spans,
-            detector.attributes,
-            detector.events,
-            detector.exceptions,
-            detector.ends,
-            detector.counter,
-        ]
-        expected = [
-            ['script_4_tracer'],
-            ['fetch_data'],
-            [
-                {'request_type': 'async'},
-                {'data_size': None},
+        actual = detector.run(self.code_4)
+        expected = {
+            'tracers': [
+                TelemetryCall(func='script_4_tracer', line_number=10, args=None)
             ],
-            [],
-            True,
-            False,
-            [],
-        ]
+            'spans': [
+                TelemetryCall(func='fetch_data', line_number=26, args=None)
+            ],
+            'attributes': [
+                TelemetryCall(
+                    func='set_attribute',
+                    line_number=27, 
+                    args={
+                        'func': 'span.set_attribute',
+                        'args': ['request_type', 'async'
+                    ]}
+                ),
+                TelemetryCall(
+                    func='set_attribute',
+                    line_number=30,
+                    args={
+                        'func': 'span.set_attribute', 
+                        'args': [
+                            'data_size', 
+                            {
+                                'func': 'len', 
+                                'args': ['raw_data']
+                            }
+                        ]
+                    }
+                ),
+            ],
+            'events': [
+                TelemetryCall(
+                    func='add_event',
+                    line_number=33,
+                    args={
+                        'func': 'span.add_event',
+                        'args': [
+                            'data_processed',
+                            {
+                                'input_size': {
+                                    'func': 'len',
+                                    'args': ['raw_data']
+                                },
+                                'output_size': {
+                                    'func': 'len',
+                                    'args': ['processed_data']
+                                }
+                            }
+                        ]
+                    }
+                ),
+            ],
+        }
 
         self.assertEqual(actual, expected)

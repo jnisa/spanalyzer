@@ -2,21 +2,27 @@
 
 import json
 
+from copy import deepcopy
+
+from typing import Any
 from typing import Dict
 from typing import List
 
 from spanalyzer.script import FunctionSpecs
 
-def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: List[Dict]) -> Dict:
+from spanalyzer.constants.telemetry import TelemetryCall
+from spanalyzer.constants.telemetry import TelemetryKeywords
+
+def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, TelemetryCall]) -> Dict:
     """
     Function that will be used to conciliate the functions and the telemetry details.
 
     Args:
         functions_lst [List[FunctionSpecs]]: list of functions with their specs
-        telemetry_lst [List[Dict]]: list of telemetry details
+        telemetry_lst [Dict[str, Dict]]: dictionary of telemetry details
 
     Returns:
-        List[Dict]: list of telemetry details
+        Dict: dictionary of telemetry details
 
     _Example_:
         >>> functions_lst = [
@@ -31,60 +37,117 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: List[Dict]) 
         ...         end_lineno=20,
         ...     ),
         ... ]
-        >>> telemetry_lst = [
-        ...     {
-        ...         'tracers': {
-        ...             1: 'test_tracer_1',
-        ...             24: 'test_tracer_2'
-        ...         },
-        ...         'spans': {
-        ...             12: 'test_span_1',
-        ...             24: 'test_span_2'
-        ...         },
-        ...         'attributes': {
-        ...             19: 'test_attribute_1',
-        ...             24: 'test_attribute_2'
-        ...         },
-        ...         'events': {
-        ...             2: 'test_event_1',
-        ...             13: 'test_event_2'
-        ...         },
-        ...         'exceptions': {
-        ...             2: True,
-        ...         },
-        ...         'ends': {
-        ...             19: True,
-        ...         },
-        ...         'counter': {
-        ...             19: 'test_counter_1',
-        ...             24: 'test_counter_2'
-        ...         },
+        >>> telemetry_lst = {
+        ...     'tracers': [
+        ...         TelemetryCall(name='test_tracer_1', line_number=1, args=None),
+        ...         TelemetryCall(name='test_tracer_2', line_number=24, args=None),
+        ...     ],
+        ...     'spans': [
+        ...         TelemetryCall(name='test_span_1', line_number=12, args=None),
+        ...         TelemetryCall(name='test_span_2', line_number=24, args=None),
+        ...     ],
+        ...     'attributes': [
+        ...         TelemetryCall(name='test_attribute_1', line_number=19, args=None),
+        ...         TelemetryCall(name='test_attribute_2', line_number=24, args=None),
+        ...     ],
+        ...     'events': [
+        ...         TelemetryCall(name='test_event_1', line_number=2, args=None),
+        ...         TelemetryCall(name='test_event_2', line_number=13, args=None),
+        ...     ],
+        ...     'exceptions': {
+        ...         2: True,
         ...     },
-        ... ]
+        ...     'ends': {
+        ...         19: True,
+        ...     },
+        ...     'counter': [
+        ...         TelemetryCall(name='test_counter_1', line_number=19, args=None),
+        ...         TelemetryCall(name='test_counter_2', line_number=24, args=None),
+        ...     ],
+        ... }
         >>> conciliation(functions_lst, telemetry_lst)
         {
-            'tracers': ['test_tracer_1', 'test_tracer_2'],
-            'spans': ['test_span_1', 'test_span_2'],
-            'attributes': ['test_attribute_2'],
-            'events': ['test_event_1'],
-            'exceptions': True,
-            'ends': False,
-            'counter': ['test_counter_2'],
+            'tracers': [
+                TelemetryCall(name='test_tracer_1', line_number=1, args=None),
+                TelemetryCall(name='test_tracer_2', line_number=24, args=None),
+            ],
+            'spans': [
+                TelemetryCall(name='test_span_1', line_number=12, args=None),
+                TelemetryCall(name='test_span_2', line_number=24, args=None),
+            ],
+            'attributes': [
+                TelemetryCall(name='test_attribute_2', line_number=24, args=None),
+            ],
+            'events': [
+                TelemetryCall(name='test_event_1', line_number=2, args=None),
+                TelemetryCall(name='test_event_2', line_number=13, args=None),
+            ],
+            'exceptions': {
+                2: True,
+            },
+            'ends': {
+                19: True,
+            },
             'functions': {
                 'function_1': {
-                    'attributes': ['test_attribute_1'],
+                    'attributes': [
+                        TelemetryCall(name='test_attribute_1', line_number=19, args=None),
+                    ],
                 },
                 'function_2': {
-                    'events': ['test_event_2'],
+                    'events': [
+                        TelemetryCall(name='test_event_2', line_number=13, args=None),
+                    ],
                     'ends': True,
-                    'counter': ['test_counter_1'],
+                    'counter': [
+                        TelemetryCall(name='test_counter_1', line_number=19, args=None),
+                    ],
                 },
             },
         }
     """
 
-    # TODO. implement the conciliation
-    pass
+    def is_in_function(value: int, function: FunctionSpecs) -> bool:
+        """
+        Check if the provided value is within the range of the function.
+
+        Args:
+            value [int]: value to check
+            function [FunctionSpecs]: function to check
+
+        Returns:
+            bool: True if the value is within the range, False otherwise
+        """
+
+        return value in range(function.start_lineno, function.end_lineno)
+    
+      
+    base_structure = deepcopy(TelemetryKeywords.get_attributes_structure())
+
+    output = {
+        **base_structure,
+        'functions': {
+            func.name: {
+                'docstring': func.docstring,
+                **deepcopy(base_structure),
+            }
+            for func in functions_lst
+        }
+    }
+
+    for key, value in telemetry_lst.items():
+        for item in value:
+            matched = False
+            for func in functions_lst:
+                if is_in_function(item.line_number, func):
+                    output['functions'][func.name][key].append(item)
+                    matched = True
+                    break
+            if not matched:
+                output[key].append(item)
+        
+    return filter_empty_dict(output)
+        
 
 def write_json(data: Dict, path: str):
     """
@@ -97,3 +160,47 @@ def write_json(data: Dict, path: str):
 
     with open(path, 'w') as f:
         json.dump(data, f)
+
+
+def filter_empty_dict(d: Dict, empty_values: List[Any] = [None, [], {}]) -> Dict:
+    """
+    Remove all the entries from the dictionary that are empty.
+
+    Args:
+        d (Dict): dictionary to filter
+        empty_values (List[Any]): list of values to consider as empty
+
+    Returns:
+        Dict: filtered dictionary
+    """
+
+    keys_to_delete = []
+
+    for key, value in d.items():
+        if value in empty_values:
+            keys_to_delete.append(key)
+        elif isinstance(value, dict):
+            d[key] = filter_empty_dict(value, empty_values)
+
+    for key in keys_to_delete:
+        del d[key]
+
+    return d
+
+# TODO. this needs to be tested
+def remove_call_duplicates(lst: List[TelemetryCall]) -> List[TelemetryCall]:
+    """
+    Remove duplicates from the list of telemetry calls.
+    """
+
+    call_per_line = {}
+
+    for call in lst:
+        if call.line_number not in call_per_line:
+            call_per_line[call.line_number] = call
+        else:
+            if call.func not in call_per_line[call.line_number].func:
+                call_per_line[call.line_number].func.append(call.func)
+
+    return list(call_per_line.values())
+
