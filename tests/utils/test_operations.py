@@ -6,8 +6,10 @@ from spanalyzer.script import FunctionSpecs
 
 from spanalyzer.constants.telemetry import TelemetryCall
 
+from spanalyzer.utils.operations import folder_trim
 from spanalyzer.utils.operations import conciliation
 from spanalyzer.utils.operations import filter_empty_dict
+from spanalyzer.utils.operations import remove_call_duplicates
 
 class TestOperations(unittest.TestCase):
 
@@ -185,7 +187,7 @@ class TestOperations(unittest.TestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_filter_empty(self):
+    def test_filter_empty_dict(self):
         """
         Description: test the filtering process with a basic dictionary to filter.
         """
@@ -214,7 +216,7 @@ class TestOperations(unittest.TestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_filter_empty_exception(self):
+    def test_filter_empty_dict_exception(self):
         """
         Description: test the filtering process with a dictionary that it's empty.
         """
@@ -223,5 +225,49 @@ class TestOperations(unittest.TestCase):
 
         actual = filter_empty_dict(test_dict)
         expected = {}
+
+        self.assertEqual(actual, expected)
+    
+    def test_remove_call_duplicates(self):
+        """
+        Description: test the removal of duplicates from a list of telemetry calls.
+        """
+
+        test_lst = [
+            TelemetryCall(func='test_tracer_1', line_number=1, args=None),
+            TelemetryCall(func='test_tracer_2', line_number=1, args=None),
+            TelemetryCall(func='test_tracer_3', line_number=2, args=None),
+            TelemetryCall(func='test_tracer_1', line_number=1, args=None),
+            TelemetryCall(func='test_tracer_2', line_number=1, args=None),
+        ]
+
+        actual = remove_call_duplicates(test_lst)
+        expected = [
+            TelemetryCall(func='test_tracer_1', line_number=1, args=None),
+            TelemetryCall(func='test_tracer_3', line_number=2, args=None),
+        ]
+
+        self.assertEqual(actual, expected)
+
+    def test_folder_trim(self):
+        """
+        Description: test if the function is able to perform the trim in a very nested folder
+        structure.
+        """
+
+        test_lst = [
+            {'script': 'path/to/the/folder/subfolder/script.py', 'attribute_1': 'val1'},
+            {'script': 'path/to/the/folder/script1.py', 'attribute_2': 'val2'},
+            {'script': 'path/to/the/folder/subfolder/subsubfolder/script.py', 'attribute_3': 'val3'},
+            {'script': 'path/to/the/folder/script2.py', 'attribute_4': 'val4'},
+        ]
+
+        actual = folder_trim(test_lst, folder_key='script')
+        expected = [
+            {'script': 'folder/subfolder/script.py', 'attribute_1': 'val1'},
+            {'script': 'folder/script1.py', 'attribute_2': 'val2'},
+            {'script': 'folder/subfolder/subsubfolder/script.py', 'attribute_3': 'val3'},
+            {'script': 'folder/script2.py', 'attribute_4': 'val4'},
+        ]
 
         self.assertEqual(actual, expected)

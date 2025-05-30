@@ -92,6 +92,21 @@ def terminal_report(data: List[Dict]) -> str:
             return f'{value}%'
         else:
             return str(value)
+        
+    def get_max_name_length(data: List[Dict]) -> int:
+        """
+        Get the maximum length of the name column.
+
+        Args:
+            data (List[Dict]): list of dicts, each dict will be the equivalent of a row in the table.
+
+        Returns:
+            int: the maximum length of the name column.
+        """
+
+        first_key = list(data[0].keys())[0]
+
+        return max(len(entry[first_key]) for entry in data)
 
     def record_builder(values: List[str], is_header: bool = False, widths: List[int] = None) -> str:
         """
@@ -109,20 +124,27 @@ def terminal_report(data: List[Dict]) -> str:
             str: A formatted string representing the header.
         """
 
-        widths = [26 if idx == 0 else len(val)+3 for idx, val in enumerate(values)] if widths is None else widths
+        widths = [max_name_length + 10 if idx == 0 else len(val)+3 for idx, val in enumerate(values)] if widths is None else widths
         formatted_values = [format_value(v) for v in values]
         return " ".join(f"{v:<{w}}" for v, w in zip(formatted_values, widths)), widths
 
     report_records = []
+    
+    try:
+        max_name_length = get_max_name_length(data)
+    except IndexError:
+        return ''
 
     headers_lst = [entry.capitalize() for entry in data[0].keys()]
     header, widths = record_builder(headers_lst, True)
     report_records.append(header)
     report_records.append('-' * len(header))
 
+
     for entry in data:
         record, _ = record_builder([entry[key] for key in data[0].keys()], False, widths)
         report_records.append(record)
+    
 
     report_records.append('-' * len(header))
 

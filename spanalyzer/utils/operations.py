@@ -1,5 +1,7 @@
 # Script containing some operations that will be used through the spanalyzer
 
+import os
+
 import json
 
 from copy import deepcopy
@@ -187,10 +189,31 @@ def filter_empty_dict(d: Dict, empty_values: List[Any] = [None, [], {}]) -> Dict
 
     return d
 
-# TODO. this needs to be tested
+
 def remove_call_duplicates(lst: List[TelemetryCall]) -> List[TelemetryCall]:
     """
     Remove duplicates from the list of telemetry calls.
+
+    Args:
+        lst (List[TelemetryCall]): list of telemetry calls
+
+    Returns:
+        List[TelemetryCall]: list of telemetry calls without duplicates
+
+    _Example_:
+        >>> lst = [
+        ...     TelemetryCall(name='test_tracer_1', line_number=1, args=None),
+        ...     TelemetryCall(name='test_tracer_2', line_number=1, args=None),
+        ...     TelemetryCall(name='test_tracer_3', line_number=2, args=None),
+        ...     TelemetryCall(name='test_tracer_1', line_number=1, args=None),
+        ...     TelemetryCall(name='test_tracer_2', line_number=1, args=None),
+        ... ]
+        >>> remove_call_duplicates(lst)
+        [
+            TelemetryCall(name='test_tracer_1', line_number=1, args=None),
+            TelemetryCall(name='test_tracer_2', line_number=1, args=None),
+            TelemetryCall(name='test_tracer_3', line_number=2, args=None),
+        ]
     """
 
     call_per_line = {}
@@ -198,9 +221,80 @@ def remove_call_duplicates(lst: List[TelemetryCall]) -> List[TelemetryCall]:
     for call in lst:
         if call.line_number not in call_per_line:
             call_per_line[call.line_number] = call
-        else:
-            if call.func not in call_per_line[call.line_number].func:
-                call_per_line[call.line_number].func.append(call.func)
 
     return list(call_per_line.values())
 
+def folder_trim(lst: List[Dict], folder_key: str = 'script') -> List[Dict]:
+    """
+    Remove the folder from the script path.
+
+    Args:
+        lst (List[Dict]): list of dictionaries
+        folder_key (str): key of the folder in the script path
+
+    Returns:
+        List[Dict]: list of dictionaries with the folder trimmed
+
+    _Example_:
+        >>> lst = [
+        ...     {'script': 'path/to/the/folder/subfolder/script.py', 'attribute_1': 'val1'},
+        ...     {'script': 'path/to/the/folder/script1.py', 'attribute_2': 'val2'},
+        ... ]
+        >>> folder_trim(lst, folder_key='script')
+        [
+            {'script': 'folder/subfolder/script.py', 'attribute_1': 'val1'},
+            {'script': 'folder/script1.py', 'attribute_2': 'val2'},
+        ]
+    """
+
+    def find_folder_to_keep(paths: List[str]) -> str:
+        """
+        Find the folder that should be kept from the list of paths provided.
+
+        Args:
+            paths (List[str]): list of paths
+
+        Returns:
+            str: folder to keep
+
+        _Example_:
+            >>> paths = ['path/to/the/folder/subfolder/script.py', 'path/to/the/folder/script1.py']
+            >>> find_folder_to_keep(paths)
+            'folder'
+        """
+
+        split_paths = [path.split(os.sep) for path in paths]
+        common_parts = os.path.commonprefix(split_paths)
+
+        return os.sep.join(common_parts)
+    
+    def trim(path: str, base_folder: str) -> str:
+        """
+        Trim the path to the base folder.
+
+        Args:
+            path (str): path to trim
+            base_folder (str): base folder
+
+        Returns:
+            str: trimmed path
+
+        _Example_:
+            >>> path = 'path/to/the/folder/subfolder/script.py'
+            >>> base_folder = 'path/to/the/folder'
+            >>> trim(path, base_folder)
+            'folder/subfolder/script.py'
+        """
+
+        return path.replace(base_folder, '')
+
+    script_paths = [item['script'] for item in lst]
+    base_folder = os.sep.join(find_folder_to_keep(script_paths).split(os.sep)[:-1]) + os.sep
+
+    return [
+        {
+            **item,
+            'script': trim(item['script'], base_folder)
+        }
+        for item in lst
+    ]

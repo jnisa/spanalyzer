@@ -102,7 +102,6 @@ class TelemetryDetector(NodeVisitor):
                     ))
 
             case _ if call_type in self.attribute_operations:
-                # breakpoint()
                 self.output['attributes'].append(TelemetryCall(
                     func=call_type,
                     line_number=node.lineno,
@@ -111,8 +110,6 @@ class TelemetryDetector(NodeVisitor):
 
             case _ if call_type in self.event_operations:
                 args = ast_extractor(node) if isinstance(node, Expr) else ast_extractor(node.args)
-                
-                # breakpoint()
                 
                 self.output['events'].append(TelemetryCall(
                     func=call_type,
@@ -155,10 +152,8 @@ class TelemetryDetector(NodeVisitor):
             except:
                 pass
 
-        # return self.output
-
         return {
-            key: remove_call_duplicates(val) 
-            for key, val in self.output.items() 
-            if isinstance(val, list) and any(isinstance(item, TelemetryCall) for item in val)
+            key: (remove_call_duplicates(val) if isinstance(val, list) and any(isinstance(item, TelemetryCall) for item in val)
+                 else [])
+            for key, val in self.output.items()
         }

@@ -52,10 +52,10 @@ class TestReports(TestCase):
         ]
 
         actual = terminal_report(test_report)
-        expected = """Script                     Spans    Traces    Metrics    Events    Attributes    Coverage   
---------------------------------------------------------------------------------------------
-test_program.py            ✓        ✓         ✓          ✓         ✓             100%       
---------------------------------------------------------------------------------------------"""
+        expected = """Script                    Spans    Traces    Metrics    Events    Attributes    Coverage   
+-------------------------------------------------------------------------------------------
+test_program.py           ✓        ✓         ✓          ✓         ✓             100%       
+-------------------------------------------------------------------------------------------"""
 
         self.compare_terminal_reports(actual, expected)
 
@@ -71,12 +71,12 @@ test_program.py            ✓        ✓         ✓          ✓         ✓  
         ]
 
         actual = terminal_report(test_report)
-        expected = """Name                       Attribute_1    Attribute_2    Attribute_3    Attribute_4    Attribute_5    Attribute_6   
---------------------------------------------------------------------------------------------------------------------
-program_1.py               ✓              ✓              ✗              ✓              ✗              74%           
-program_2.py               ✗              ✗              ✗              ✓              ✓              63%           
-program_3.py               ✓              ✓              ✓              ✓              ✓              82%           
---------------------------------------------------------------------------------------------------------------------"""
+        expected = """Name                   Attribute_1    Attribute_2    Attribute_3    Attribute_4    Attribute_5    Attribute_6   
+----------------------------------------------------------------------------------------------------------------
+program_1.py           ✓              ✓              ✗              ✓              ✗              74%           
+program_2.py           ✗              ✗              ✗              ✓              ✓              63%           
+program_3.py           ✓              ✓              ✓              ✓              ✓              82%           
+----------------------------------------------------------------------------------------------------------------"""
 
         self.compare_terminal_reports(actual, expected)
 
@@ -89,4 +89,4 @@ program_3.py               ✓              ✓              ✓              �
         actual = terminal_report(test_report)
         expected = ""
 
-        self.compare_terminal_reports(actual, expected)
+        self.assertEqual(actual, expected)

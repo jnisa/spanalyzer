@@ -28,7 +28,7 @@ class TestEngine(TestCase):
 
         test_folder = os.path.join(self.project_path, 'tree')
 
-        engine = Engine()
+        engine = Engine(test_folder, 'basic')
 
         actual = engine._list_python_scripts(test_folder)
         expected = [

@@ -1,6 +1,7 @@
 # Script containing the engine that will be capturing all the functions in a certain folder.
 
 import os
+import ast
 
 from typing import List
 from typing import Dict
@@ -9,10 +10,14 @@ from pathlib import Path
 
 from spanalyzer.script import ScriptSniffer
 
+from spanalyzer.observability import TelemetryDetector
+
 from spanalyzer.constants.exceptions import ExcludedPaths
 
 from spanalyzer.reports import terminal_report
 from spanalyzer.reports import detailed_report
+
+from spanalyzer.utils.operations import folder_trim
 
 class Engine:
     """
@@ -57,6 +62,41 @@ class Engine:
             not any(excluded_path in os.path.join(root, file) for excluded_path in excluded_paths)
         ]
     
+    def _has_telemetry_attrs(self, data: Dict) -> Dict:
+        """
+        Check if the telemetry attributes are empty.
+
+        Args:
+            data [Dict]: the data to be filtered
+
+        Returns:
+            [Dict]: the filtered data
+
+        _Example_:
+        >>> data = {
+        ...     'tracers': [
+        ...         TelemetryCall(func='test_tracer_1', line_number=1, args=None),
+        ...         TelemetryCall(func='test_tracer_2', line_number=24, args=None),
+        ...     ],
+        ...     'spans': [],
+        ...     'attributes': [
+        ...         TelemetryCall(func='test_attribute_1', line_number=1, args=None),
+        ...         TelemetryCall(func='test_attribute_2', line_number=24, args=None),
+        ...     ],
+        ... }
+        >>> _is_empty_attrs(data)
+        {
+            'tracers': True,
+            'spans': False,
+            'attributes': True,
+        }
+        """
+
+        return {
+            key: True if len(val) > 0 else False
+            for key, val in data.items()
+        }
+    
     def _switch_report(self, report_data: Dict):
         """
         Switch the report type.
@@ -70,7 +110,7 @@ class Engine:
 
         match self.report_type:
             case 'basic':
-                return terminal_report(report_data)
+                print(terminal_report(folder_trim(report_data)))
 
             # TODO. needs some work            
             case 'detailed':
@@ -93,16 +133,20 @@ class Engine:
         5. Generate the report.
         """
 
+        telemetry_report = []
 
         for script in self._list_python_scripts(self.folder_path):
+            match self.report_type:
+                case 'basic':
+                    telemetry_report.append({
+                        **{'script': script},
+                        **self._has_telemetry_attrs(TelemetryDetector().run(ast.parse(open(script).read()))),
+                    })
 
-            functions_list = self.script_sniffer.run()
-
-            # 2. Capture the telemetry specs
-            telemetry_specs = self.telemetry_sniffer.run()
-
-            # 3. Conciliate the telemetry with the script results
-            conciliated_data = self.conciliate_data(functions_list, telemetry_specs)
+                case 'detailed':
+                    raise NotImplementedError
+                
+                case _:
+                    raise ValueError(f"Invalid report type: {self.report_type}")
             
-            # 4. Generate the report
-            report = self._switch_report(conciliated_data)
+        self._switch_report(telemetry_report)

@@ -14,7 +14,7 @@ from typing import Union
 from typing import Optional
 from typing import Any
 
-# TODO. add more documentation to this method
+
 def ast_extractor(node: AST) -> Optional[Union[str, dict, list, Any]]:
     """
     Universal AST node value extractor.

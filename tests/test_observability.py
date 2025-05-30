@@ -62,6 +62,8 @@ class TestTelemetrySniffer(TestCase):
                 TelemetryCall(func='set_attribute', line_number=15, args={'func': 'span.set_attribute', 'args': ['attribute_1', 'value_1']}),
                 TelemetryCall(func='set_attribute', line_number=16, args={'func': 'span.set_attribute', 'args': ['attribute_2', 'value_2']})
             ],
+            'events': [],
+            'counter': [],
         }
 
         self.assertEqual(actual, expected)
@@ -289,6 +291,7 @@ class TestTelemetrySniffer(TestCase):
                     }
                 ),
             ],
+            'counter': [],
         }
 
         self.assertEqual(actual, expected)
