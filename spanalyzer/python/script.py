@@ -1,4 +1,4 @@
-# Script containing all the logic around opentelemetry instrumentation
+# Script containing the logic that will be used to sniff the python scripts
 
 from typing import Union
 
@@ -11,10 +11,9 @@ from ast import FunctionDef
 
 from collections import namedtuple
 
-# TODO. add the telemetry specs of the call
 FunctionSpecs = namedtuple('FunctionSpecs', ['name', 'docstring', 'start_lineno', 'end_lineno'])
 
-class ScriptSniffer(NodeVisitor):
+class PythonScriptSniffer(NodeVisitor):
     """
     This class will scrape all the code from a python script and return the list of functions.
 

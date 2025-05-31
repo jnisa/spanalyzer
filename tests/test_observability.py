@@ -24,17 +24,17 @@ def read_script(path: str) -> str:
     with open(path, 'r') as file:
         return file.read()
 
-class TestTelemetrySniffer(TestCase):
+class TestTelemetryDetector(TestCase):
     
     def setUp(self):
         """
         Set up the test case.
         """
 
-        test_script_1 = os.path.join(os.path.dirname(__file__), 'samples', 'script_1.py')
-        test_script_2 = os.path.join(os.path.dirname(__file__), 'samples', 'script_2.py')
-        test_script_3 = os.path.join(os.path.dirname(__file__), 'samples', 'script_3.py')
-        test_script_4 = os.path.join(os.path.dirname(__file__), 'samples', 'script_4.py')
+        test_script_1 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_1.py')
+        test_script_2 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_2.py')
+        test_script_3 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_3.py')
+        test_script_4 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_4.py')
 
         self.code_1 = ast.parse(read_script(test_script_1))
         self.code_2 = ast.parse(read_script(test_script_2))

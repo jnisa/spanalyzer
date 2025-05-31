@@ -1,4 +1,4 @@
-# Unitary tests for the script.py file
+# Unitary tests for the PythonScriptSniffer class
 
 import os
 
@@ -8,11 +8,23 @@ import textwrap
 
 from unittest import TestCase
 
-from spanalyzer.script import ScriptSniffer
-from spanalyzer.script import FunctionSpecs
+from spanalyzer.python.script import FunctionSpecs
+from spanalyzer.python.script import PythonScriptSniffer
 
-class TestScriptSniffer(TestCase):
+class TestPythonScriptSniffer(TestCase):
     
+    def setUp(self):
+        """
+        Description: Set up the test environment.
+        """
+
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        
+        self.script_1 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_1.py')
+        self.script_2 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_2.py')
+        self.script_3 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_3.py')
+        self.script_4 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_4.py')
+
     def test_has_docstring_basic(self):
         """
         Description: Test that the function can duly capture a function with a very basic docstring.
@@ -28,7 +40,7 @@ class TestScriptSniffer(TestCase):
         test_function_ast = ast.parse(test_function)
         test_function_node = test_function_ast.body[0]
 
-        sniffer = ScriptSniffer(test_function)
+        sniffer = PythonScriptSniffer(test_function)
 
         actual = sniffer._has_docstring(test_function_node)
         expected = 'This is a test function.'
@@ -62,7 +74,7 @@ class TestScriptSniffer(TestCase):
         test_function_ast = ast.parse(test_function)
         test_function_node = test_function_ast.body[0]
 
-        sniffer = ScriptSniffer(test_function)
+        sniffer = PythonScriptSniffer(test_function)
 
         actual = sniffer._has_docstring(test_function_node)
         expected = '''This is a test function.
@@ -93,7 +105,7 @@ class TestScriptSniffer(TestCase):
         test_function_ast = ast.parse(test_function)
         test_function_node = test_function_ast.body[0]
 
-        sniffer = ScriptSniffer(test_function)
+        sniffer = PythonScriptSniffer(test_function)
 
         actual = sniffer._has_docstring(test_function_node)
         expected = None
@@ -106,9 +118,7 @@ class TestScriptSniffer(TestCase):
         docstring, no arguments, etc)
         """
 
-        test_script = os.path.join(os.path.dirname(__file__), 'samples', 'script_1.py')
-
-        script_sniffer = ScriptSniffer(test_script)
+        script_sniffer = PythonScriptSniffer(self.script_1)
         script_sniffer.run()
 
         # Define the expected docstrings
@@ -134,9 +144,7 @@ class TestScriptSniffer(TestCase):
         docstrings, arguments, etc)
         """
 
-        test_script = os.path.join(os.path.dirname(__file__), 'samples', 'script_2.py')
-
-        script_sniffer = ScriptSniffer(test_script)
+        script_sniffer = PythonScriptSniffer(self.script_2)
         script_sniffer.run()
 
         # Define the expected docstrings
@@ -206,9 +214,7 @@ class TestScriptSniffer(TestCase):
         Description: test the sniffer operating with an empty script.
         """
 
-        test_script = os.path.join(os.path.dirname(__file__), 'samples', 'script_3.py')
-
-        script_sniffer = ScriptSniffer(test_script)
+        script_sniffer = PythonScriptSniffer(self.script_3)
         script_sniffer.run()
 
         actual = script_sniffer.functions_list
@@ -221,9 +227,7 @@ class TestScriptSniffer(TestCase):
         Description: Test that the sniffer can handle async functions with telemetry.
         """
 
-        test_script = os.path.join(os.path.dirname(__file__), 'samples', 'script_4.py')        
-
-        script_sniffer = ScriptSniffer(test_script)
+        script_sniffer = PythonScriptSniffer(self.script_4)
         script_sniffer.run()
 
         actual = script_sniffer.functions_list

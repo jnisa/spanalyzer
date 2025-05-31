@@ -13,7 +13,7 @@ from spanalyzer.reports import terminal_report
 from spanalyzer.utils.operations import write_json
 from spanalyzer.utils.operations import folder_trim
 from spanalyzer.utils.operations import conciliation
-from spanalyzer.script import ScriptSniffer
+from spanalyzer.python.script import PythonScriptSniffer
 from spanalyzer.observability import TelemetryDetector
 
 from spanalyzer.constants.telemetry import TelemetryCall
@@ -135,7 +135,7 @@ class Engine:
                     for key, val in TelemetryDetector().run(script_code).items():
                         entry[key] = [attr.__dict__() for attr in val]
 
-                    script_sniffer = ScriptSniffer(script)
+                    script_sniffer = PythonScriptSniffer(script)
                     script_sniffer.run()
                     script_data = script_sniffer.functions_list
 

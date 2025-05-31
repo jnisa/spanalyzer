@@ -2,7 +2,7 @@
 
 import unittest
 
-from spanalyzer.script import FunctionSpecs
+from spanalyzer.python.script import FunctionSpecs
 
 from spanalyzer.constants.telemetry import TelemetryCall
 

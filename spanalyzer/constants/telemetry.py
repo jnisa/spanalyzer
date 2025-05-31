@@ -9,8 +9,7 @@ from typing import Optional
 
 from dataclasses import dataclass
 
-# TODO. add a conversion to the telemetry call to a dictionary
-# TODO. this will then be used on the report layer
+
 @dataclass
 class TelemetryCall:
     """Represents a telemetry operation with its details."""

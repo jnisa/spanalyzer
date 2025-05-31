@@ -10,7 +10,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from spanalyzer.script import FunctionSpecs
+from spanalyzer.python.script import FunctionSpecs
 
 from spanalyzer.constants.telemetry import TelemetryCall
 from spanalyzer.constants.telemetry import TelemetryKeywords
