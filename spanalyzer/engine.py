@@ -8,16 +8,16 @@ from typing import Dict
 
 from pathlib import Path
 
-from spanalyzer.script import ScriptSniffer
+from spanalyzer.reports import terminal_report
 
+from spanalyzer.utils.operations import write_json
+from spanalyzer.utils.operations import folder_trim
+from spanalyzer.utils.operations import conciliation
+from spanalyzer.script import ScriptSniffer
 from spanalyzer.observability import TelemetryDetector
 
+from spanalyzer.constants.telemetry import TelemetryCall
 from spanalyzer.constants.exceptions import ExcludedPaths
-
-from spanalyzer.reports import terminal_report
-from spanalyzer.reports import detailed_report
-
-from spanalyzer.utils.operations import folder_trim
 
 class Engine:
     """
@@ -96,28 +96,6 @@ class Engine:
             key: True if len(val) > 0 else False
             for key, val in data.items()
         }
-    
-    def _switch_report(self, report_data: Dict):
-        """
-        Switch the report type.
-
-        Args:
-            report_data [Dict]: the data to be reported
-
-        Returns:
-            [Dict]: the report data
-        """
-
-        match self.report_type:
-            case 'basic':
-                print(terminal_report(folder_trim(report_data)))
-
-            # TODO. needs some work            
-            case 'detailed':
-                return detailed_report(report_data)
-            
-            case _:
-                raise ValueError(f"Invalid report type: {self.report_type}")
 
     def run(self):
         """
@@ -133,20 +111,39 @@ class Engine:
         5. Generate the report.
         """
 
-        telemetry_report = []
+        scripts_lst = self._list_python_scripts(self.folder_path)
+        telemetry_report = [] if self.report_type == 'basic' else {}
 
-        for script in self._list_python_scripts(self.folder_path):
-            match self.report_type:
-                case 'basic':
+        match self.report_type:
+            case 'basic':
+                for script in scripts_lst:
+                    script_code = ast.parse(open(script).read())
+
                     telemetry_report.append({
                         **{'script': script},
-                        **self._has_telemetry_attrs(TelemetryDetector().run(ast.parse(open(script).read()))),
+                        **self._has_telemetry_attrs(TelemetryDetector().run(script_code)),
                     })
 
-                case 'detailed':
-                    raise NotImplementedError
+                print(terminal_report(folder_trim(telemetry_report)))
+
+            case 'detailed':
+                for script in scripts_lst:
+                    
+                    entry = {}
+                    script_code = ast.parse(open(script).read())
+
+                    for key, val in TelemetryDetector().run(script_code).items():
+                        entry[key] = [attr.__dict__() for attr in val]
+
+                    script_sniffer = ScriptSniffer(script)
+                    script_sniffer.run()
+                    script_data = script_sniffer.functions_list
+
+                    telemetry_report.update({
+                        script: conciliation(script_data, entry)
+                    })
                 
-                case _:
-                    raise ValueError(f"Invalid report type: {self.report_type}")
-            
-        self._switch_report(telemetry_report)
+                write_json(telemetry_report, 'spanalyzer_report.json')
+
+            case _:
+                raise ValueError(f"Invalid report type: {self.report_type}")

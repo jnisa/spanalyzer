@@ -29,47 +29,47 @@ class TestOperations(unittest.TestCase):
 
         test_telemetry = {
             'tracers': [
-                TelemetryCall(func='test_tracer_1', line_number=1, args=None),
-                TelemetryCall(func='test_tracer_2', line_number=24, args=None),
+                {'func': 'test_tracer_1', 'line_number': 1, 'args': None},
+                {'func': 'test_tracer_2', 'line_number': 24, 'args': None},
             ],
             'spans': [
-                TelemetryCall(func='test_span_1', line_number=12, args=None),
-                TelemetryCall(func='test_span_2', line_number=24, args=None),
+                {'func': 'test_span_1', 'line_number': 12, 'args': None},
+                {'func': 'test_span_2', 'line_number': 24, 'args': None},
             ],
             'attributes': [
-                TelemetryCall(func='test_attribute_1', line_number=19, args=None),
-                TelemetryCall(func='test_attribute_2', line_number=24, args=None),
+                {'func': 'test_attribute_1', 'line_number': 19, 'args': None},
+                {'func': 'test_attribute_2', 'line_number': 24, 'args': None},
             ],
             'events': [
-                TelemetryCall(func='test_event_1', line_number=9, args=None),
-                TelemetryCall(func='test_event_2', line_number=13, args=None),
+                {'func': 'test_event_1', 'line_number': 9, 'args': None},
+                {'func': 'test_event_2', 'line_number': 13, 'args': None},
             ],
         }
 
         actual = conciliation(test_functions, test_telemetry)
         expected = {
             'tracers': [
-                TelemetryCall(func='test_tracer_2', line_number=24, args=None),
+                {'func': 'test_tracer_2', 'line_number': 24, 'args': None},
             ],
             'spans': [
-                TelemetryCall(func='test_span_1', line_number=12, args=None),
-                TelemetryCall(func='test_span_2', line_number=24, args=None),
+                {'func': 'test_span_1', 'line_number': 12, 'args': None},
+                {'func': 'test_span_2', 'line_number': 24, 'args': None},
             ],
             'attributes': [
-                TelemetryCall(func='test_attribute_1', line_number=19, args=None),
-                TelemetryCall(func='test_attribute_2', line_number=24, args=None),
+                {'func': 'test_attribute_1', 'line_number': 19, 'args': None},
+                {'func': 'test_attribute_2', 'line_number': 24, 'args': None},
             ],
             'events': [
-                TelemetryCall(func='test_event_2', line_number=13, args=None),
+                {'func': 'test_event_2', 'line_number': 13, 'args': None},
             ],
             'functions': {
                 'function_1': {
                     'docstring': 'This is a test function',
                     'tracers': [
-                        TelemetryCall(func='test_tracer_1', line_number=1, args=None),
+                        {'func': 'test_tracer_1', 'line_number': 1, 'args': None},
                     ],
                     'events': [
-                        TelemetryCall(func='test_event_1', line_number=9, args=None),
+                        {'func': 'test_event_1', 'line_number': 9, 'args': None},
                     ],
                 },
             },
@@ -105,81 +105,81 @@ class TestOperations(unittest.TestCase):
         
         test_telemetry = {
             'tracers': [
-                TelemetryCall(func='test_tracer_1', line_number=2, args=None),
-                TelemetryCall(func='test_tracer_2', line_number=11, args=None),
-                TelemetryCall(func='test_tracer_3', line_number=21, args=None),
-                TelemetryCall(func='test_tracer_4', line_number=29, args=None),
+                {'func': 'test_tracer_1', 'line_number': 2, 'args': None},
+                {'func': 'test_tracer_2', 'line_number': 11, 'args': None},
+                {'func': 'test_tracer_3', 'line_number': 21, 'args': None},
+                {'func': 'test_tracer_4', 'line_number': 29, 'args': None},
             ],
             'spans': [
-                TelemetryCall(func='test_span_1', line_number=1, args=None),
-                TelemetryCall(func='test_span_2', line_number=19, args=None),
-                TelemetryCall(func='test_span_3', line_number=29, args=None),
+                {'func': 'test_span_1', 'line_number': 1, 'args': None},
+                {'func': 'test_span_2', 'line_number': 19, 'args': None},
+                {'func': 'test_span_3', 'line_number': 29, 'args': None},
             ],
             'attributes': [
-                TelemetryCall(func='test_attribute_1', line_number=19, args=None),
-                TelemetryCall(func='test_attribute_2', line_number=24, args=None),
+                {'func': 'test_attribute_1', 'line_number': 19, 'args': None},
+                {'func': 'test_attribute_2', 'line_number': 24, 'args': None},
             ],
             'events': [
-                TelemetryCall(func='test_event_1', line_number=1, args=None),
-                TelemetryCall(func='test_event_2', line_number=19, args=None),
-                TelemetryCall(func='test_event_3', line_number=29, args=None),
+                {'func': 'test_event_1', 'line_number': 1, 'args': None},
+                {'func': 'test_event_2', 'line_number': 19, 'args': None},
+                {'func': 'test_event_3', 'line_number': 29, 'args': None},
             ],
             'counter': [
-                TelemetryCall(func='test_counter_1', line_number=19, args=None),
-                TelemetryCall(func='test_counter_2', line_number=22, args=None),
+                {'func': 'test_counter_1', 'line_number': 19, 'args': None},
+                {'func': 'test_counter_2', 'line_number': 22, 'args': None},
             ],
         }
 
         actual = conciliation(test_functions, test_telemetry)
         expected = {
             'tracers': [
-                TelemetryCall(func='test_tracer_2', line_number=11, args=None),
-                TelemetryCall(func='test_tracer_3', line_number=21, args=None),
+                {'func': 'test_tracer_2', 'line_number': 11, 'args': None},
+                {'func': 'test_tracer_3', 'line_number': 21, 'args': None},
             ],
             'attributes': [
-                TelemetryCall(func='test_attribute_2', line_number=24, args=None),
+                {'func': 'test_attribute_2', 'line_number': 24, 'args': None},
             ],
             'counter': [
-                TelemetryCall(func='test_counter_2', line_number=22, args=None),
+                {'func': 'test_counter_2', 'line_number': 22, 'args': None},
             ],
             'functions': {
                 'function_1': {
                     'docstring': 'This is a test function 1.',
                     'tracers': [
-                        TelemetryCall(func='test_tracer_1', line_number=2, args=None),
+                        {'func': 'test_tracer_1', 'line_number': 2, 'args': None},
                     ],
                     'spans': [
-                        TelemetryCall(func='test_span_1', line_number=1, args=None),
+                        {'func': 'test_span_1', 'line_number': 1, 'args': None},
                     ],
                     'events': [
-                        TelemetryCall(func='test_event_1', line_number=1, args=None),
+                        {'func': 'test_event_1', 'line_number': 1, 'args': None},
                     ],
                 },
                 'function_2': {
                     'docstring': 'This is a test function 2.',
                     'spans': [
-                        TelemetryCall(func='test_span_2', line_number=19, args=None),
+                        {'func': 'test_span_2', 'line_number': 19, 'args': None},
                     ],
                     'attributes': [
-                        TelemetryCall(func='test_attribute_1', line_number=19, args=None),
+                        {'func': 'test_attribute_1', 'line_number': 19, 'args': None},
                     ],
                     'events': [
-                        TelemetryCall(func='test_event_2', line_number=19, args=None),
+                        {'func': 'test_event_2', 'line_number': 19, 'args': None},
                     ],
                     'counter': [
-                        TelemetryCall(func='test_counter_1', line_number=19, args=None),
+                        {'func': 'test_counter_1', 'line_number': 19, 'args': None},
                     ],
                 },
                 'function_3': {
                     'docstring': 'This is a test function 3.',
                     'tracers': [
-                        TelemetryCall(func='test_tracer_4', line_number=29, args=None),
+                        {'func': 'test_tracer_4', 'line_number': 29, 'args': None},
                     ],
                     'spans': [
-                        TelemetryCall(func='test_span_3', line_number=29, args=None),
+                        {'func': 'test_span_3', 'line_number': 29, 'args': None},
                     ],
                     'events': [
-                        TelemetryCall(func='test_event_3', line_number=29, args=None),
+                        {'func': 'test_event_3', 'line_number': 29, 'args': None},
                     ],
                 },
             },

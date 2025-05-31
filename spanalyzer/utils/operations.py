@@ -15,7 +15,7 @@ from spanalyzer.script import FunctionSpecs
 from spanalyzer.constants.telemetry import TelemetryCall
 from spanalyzer.constants.telemetry import TelemetryKeywords
 
-def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, TelemetryCall]) -> Dict:
+def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Dict]) -> Dict:
     """
     Function that will be used to conciliate the functions and the telemetry details.
 
@@ -41,20 +41,20 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Te
         ... ]
         >>> telemetry_lst = {
         ...     'tracers': [
-        ...         TelemetryCall(name='test_tracer_1', line_number=1, args=None),
-        ...         TelemetryCall(name='test_tracer_2', line_number=24, args=None),
+        ...         {'name': 'test_tracer_1', 'line_number': 1, 'args': None},
+        ...         {'name': 'test_tracer_2', 'line_number': 24, 'args': None},
         ...     ],
         ...     'spans': [
-        ...         TelemetryCall(name='test_span_1', line_number=12, args=None),
-        ...         TelemetryCall(name='test_span_2', line_number=24, args=None),
+        ...         {'name': 'test_span_1', 'line_number': 12, 'args': None},
+        ...         {'name': 'test_span_2', 'line_number': 24, 'args': None},
         ...     ],
         ...     'attributes': [
-        ...         TelemetryCall(name='test_attribute_1', line_number=19, args=None),
-        ...         TelemetryCall(name='test_attribute_2', line_number=24, args=None),
+        ...         {'name': 'test_attribute_1', 'line_number': 19, 'args': None},
+        ...         {'name': 'test_attribute_2', 'line_number': 24, 'args': None},
         ...     ],
         ...     'events': [
-        ...         TelemetryCall(name='test_event_1', line_number=2, args=None),
-        ...         TelemetryCall(name='test_event_2', line_number=13, args=None),
+        ...         {'name': 'test_event_1', 'line_number': 2, 'args': None},
+        ...         {'name': 'test_event_2', 'line_number': 13, 'args': None},
         ...     ],
         ...     'exceptions': {
         ...         2: True,
@@ -63,26 +63,26 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Te
         ...         19: True,
         ...     },
         ...     'counter': [
-        ...         TelemetryCall(name='test_counter_1', line_number=19, args=None),
-        ...         TelemetryCall(name='test_counter_2', line_number=24, args=None),
+        ...         {'name': 'test_counter_1', 'line_number': 19, 'args': None},
+        ...         {'name': 'test_counter_2', 'line_number': 24, 'args': None},
         ...     ],
         ... }
         >>> conciliation(functions_lst, telemetry_lst)
         {
             'tracers': [
-                TelemetryCall(name='test_tracer_1', line_number=1, args=None),
-                TelemetryCall(name='test_tracer_2', line_number=24, args=None),
+                {'name': 'test_tracer_1', 'line_number': 1, 'args': None},
+                {'name': 'test_tracer_2', 'line_number': 24, 'args': None},
             ],
             'spans': [
-                TelemetryCall(name='test_span_1', line_number=12, args=None),
-                TelemetryCall(name='test_span_2', line_number=24, args=None),
+                {'name': 'test_span_1', 'line_number': 12, 'args': None},
+                {'name': 'test_span_2', 'line_number': 24, 'args': None},
             ],
             'attributes': [
-                TelemetryCall(name='test_attribute_2', line_number=24, args=None),
+                {'name': 'test_attribute_2', 'line_number': 24, 'args': None},
             ],
             'events': [
-                TelemetryCall(name='test_event_1', line_number=2, args=None),
-                TelemetryCall(name='test_event_2', line_number=13, args=None),
+                {'name': 'test_event_1', 'line_number': 2, 'args': None},
+                {'name': 'test_event_2', 'line_number': 13, 'args': None},
             ],
             'exceptions': {
                 2: True,
@@ -93,16 +93,16 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Te
             'functions': {
                 'function_1': {
                     'attributes': [
-                        TelemetryCall(name='test_attribute_1', line_number=19, args=None),
+                        {'name': 'test_attribute_1', 'line_number': 19, 'args': None},
                     ],
                 },
                 'function_2': {
                     'events': [
-                        TelemetryCall(name='test_event_2', line_number=13, args=None),
+                        {'name': 'test_event_2', 'line_number': 13, 'args': None},
                     ],
                     'ends': True,
                     'counter': [
-                        TelemetryCall(name='test_counter_1', line_number=19, args=None),
+                        {'name': 'test_counter_1', 'line_number': 19, 'args': None},
                     ],
                 },
             },
@@ -141,7 +141,7 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Te
         for item in value:
             matched = False
             for func in functions_lst:
-                if is_in_function(item.line_number, func):
+                if is_in_function(item['line_number'], func):
                     output['functions'][func.name][key].append(item)
                     matched = True
                     break
@@ -161,7 +161,7 @@ def write_json(data: Dict, path: str):
     """
 
     with open(path, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=4)
 
 
 def filter_empty_dict(d: Dict, empty_values: List[Any] = [None, [], {}]) -> Dict:

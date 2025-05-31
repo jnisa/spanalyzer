@@ -10,53 +10,6 @@ class ReportSymbols:
     FALSE = "✗"
     PERCENTAGE = "%"
 
-# TODO. not sure if we want to include a landing zone for the repoert to be stored on
-# TODO. update the output, a function can have multiple spans
-# TODO. this function needs to navigate through the 
-def detailed_report(codebase_path: str) -> dict:
-    """
-    Generate a report for the given codebase.
-
-    Args:
-        codebase_path: Path to the codebase to analyze
-
-    Returns:
-        A dictionary containing the report
-
-    _Example Output_        
-        - file_path: /path/to/file.py
-        functions:
-        - name: fetch_data
-            span_id: span_1
-            span_type: context_manager
-            has_span: true
-            span_ended: true
-            exceptions_recorded: true
-            metrics_emitted: [data_fetched_total]
-            events_emitted: [data_fetched_event]
-            attributes: [data_fetched_attribute]
-
-        - name: retry_wrapper
-            span_id: span_2
-            span_type: manual
-            has_span: true
-            span_ended: false
-            exceptions_recorded: false
-            metrics_emitted: []
-            events_emitted: []
-            attributes: []
-
-        - name: validate
-            has_span: false
-            span_ended: false
-            exceptions_recorded: false
-            metrics_emitted: []
-            events_emitted: []
-            attributes: []
-    """
-
-    pass
-
 def terminal_report(data: List[Dict]) -> str:
     """
     Generates a coverage report table similar to coverage.py output.

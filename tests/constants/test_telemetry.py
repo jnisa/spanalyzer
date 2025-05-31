@@ -3,8 +3,25 @@
 from unittest import TestCase
 
 from spanalyzer.constants.telemetry import TelemetryKeywords
-
+from spanalyzer.constants.telemetry import TelemetryCall
 class TestTelemetryKeywords(TestCase):
+
+    def test_telemetry_call_dict(self):
+        """
+        Description: test the dictionary conversion of the TelemetryCall class.
+        """
+
+        test_call = TelemetryCall(func='test_func', line_number=1, args=None, keywords=None)
+
+        actual = test_call.__dict__()
+        expected = {
+            'func': 'test_func',
+            'line_number': 1,
+            'args': None,
+            'keywords': None,
+        }
+
+        self.assertEqual(actual, expected)
 
     def test_telemetry_keywords_values(self):
         """
