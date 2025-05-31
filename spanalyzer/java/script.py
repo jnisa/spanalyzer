@@ -1,7 +1,9 @@
 # Script containing the logic that will be used to sniff the Java source files
 
 import javalang
+
 from typing import Union
+
 from collections import namedtuple
 
 # TODO. if these are the same than the ones in python, we should move them to a shared module

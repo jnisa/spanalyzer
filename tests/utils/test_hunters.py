@@ -13,7 +13,15 @@ from ast import Constant
 from ast import Attribute
 from ast import Subscript
 
+from javalang.tree import Literal
+from javalang.tree import Assignment
+from javalang.tree import ClassCreator
+from javalang.tree import ReferenceType
+from javalang.tree import MemberReference
+from javalang.tree import MethodInvocation
+
 from spanalyzer.utils.hunters import ast_extractor
+from spanalyzer.utils.hunters import java_ast_extractor
 
 class TestHunters(TestCase):
 
@@ -92,7 +100,7 @@ class TestHunters(TestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_expr_hunter_basic(self):
+    def test_ast_extractor_counter(self):
         """
         Description: check if we can capture the counter operator from a code sample containing one
         counter operator.
@@ -119,7 +127,7 @@ class TestHunters(TestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_expr_hunter_add_event_simple(self):
+    def test_ast_extractor_add_event_simple(self):
         """
         Description: check if we can capture the add_event operator from a code sample containing one
         add_event operator.
@@ -155,7 +163,7 @@ class TestHunters(TestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_expr_hunter_add_event_complex(self):
+    def test_ast_extractor_add_event_complex(self):
         """
         Description: check if we can capture the add_event operator from a code sample containing a new
         increment is created with no attributes.
@@ -219,7 +227,7 @@ class TestHunters(TestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_expr_hunter_add_events(self):
+    def test_ast_extractor_add_events(self):
         """
         Description: check if we can capture the add_events operator from a code sample containing a new
         increment is created with no attributes.
@@ -307,3 +315,246 @@ class TestHunters(TestCase):
         }
 
         self.assertEqual(actual, expected)
+
+    def test_java_ast_extractor_literal(self):
+        """
+        Description: check if the extractor is capable of dealing with ast literal values.
+        """
+
+        test_literal = Literal(value="test")
+
+        actual = java_ast_extractor(test_literal)
+        expected = "test"
+
+        self.assertEqual(actual, expected)
+
+    def test_java_ast_extractor_member_reference(self):
+        """
+        Description: check if the extractor is capable of dealing with ast member reference values.
+        """
+
+        test_member_reference = MemberReference(
+            member="test_member"
+        )
+
+        actual = java_ast_extractor(test_member_reference)
+        expected = "test_member"
+
+        self.assertEqual(actual, expected)
+
+    def test_java_ast_extractor_method_invocation(self):
+        """
+        Description: check if the extractor is capable of dealing with different types of method invocations.
+        """
+
+        test_method_invocation_1 = MethodInvocation(
+            member="spanBuilder",
+            qualifier="tracer",
+            arguments=[
+                Literal(value="test_span")
+            ],
+        )
+
+        test_method_invocation_2 = MethodInvocation(
+            member="setAttribute",
+            qualifier="span",
+            arguments=[
+                Literal(value="test_key"),
+                Literal(value="test_value")
+            ],
+        )
+
+        test_method_invocation_3 = MethodInvocation(
+            member="end",
+            qualifier="span",
+            arguments=[],
+        )
+
+        actual = (
+            java_ast_extractor(test_method_invocation_1),
+            java_ast_extractor(test_method_invocation_2),
+            java_ast_extractor(test_method_invocation_3)
+        )
+        expected = (
+            {
+                "method": "spanBuilder",
+                "qualifier": "tracer",
+                "arguments": ["test_span"]
+            },
+            {
+                "method": "setAttribute",
+                "qualifier": "span",
+                "arguments": ["test_key", "test_value"]
+            },
+            {
+                "method": "end",
+                "qualifier": "span",
+                "arguments": []
+            }
+        )
+
+        self.assertEqual(actual, expected)
+
+    def test_java_ast_extractor_class_creator(self):
+        """
+        Description: check if the extractor is capable of parsing OpenTelemetry-style ClassCreator expressions.
+        """
+
+        test_creator_1 = ClassCreator(
+            type=MemberReference(member="HashMap"),
+            arguments=[],
+            body=None
+        )
+
+        test_creator_2 = ClassCreator(
+            type=MemberReference(member="Attributes$Builder"),
+            arguments=[],
+            body=[
+                MethodInvocation(
+                    member="put",
+                    qualifier="builder",
+                    arguments=[
+                        Literal(value="operation"),
+                        Literal(value="subtraction")
+                    ]
+                ),
+                MethodInvocation(
+                    member="put",
+                    qualifier=None,
+                    arguments=[
+                        Literal(value="result"),
+                        Literal(value="123")
+                    ]
+                ),
+                MethodInvocation(
+                    member="build",
+                    qualifier=None,
+                    arguments=[]
+                )
+            ]
+        )
+
+        test_creator_3 = ClassCreator(
+            type=MemberReference(member="SomeTracer"),
+            arguments=[],
+            body=[
+                MethodInvocation(
+                    member="spanBuilder",
+                    qualifier=None,
+                    arguments=[
+                        Literal(value="span_name")
+                    ]
+                )
+            ]
+        )
+
+        actual = (
+            java_ast_extractor(test_creator_1),
+            java_ast_extractor(test_creator_2),
+            java_ast_extractor(test_creator_3)
+        )
+
+        expected = (
+            {
+                "type": "HashMap",
+                "arguments": [],
+                "body": None,
+            },
+            {
+                "type": "Attributes$Builder",
+                "arguments": [],
+                "body": [
+                    {
+                        "method": "put",
+                        "qualifier": "builder",
+                        "arguments": ["operation", "subtraction"]
+                    },
+                    {
+                        "method": "put",
+                        "qualifier": None,
+                        "arguments": ["result", "123"]
+                    },
+                    {
+                        "method": "build",
+                        "qualifier": None,
+                        "arguments": []
+                    }
+                ],
+            },
+            {
+                "type": "SomeTracer",
+                "arguments": [],
+                "body": [
+                    {
+                        "method": "spanBuilder",
+                        "qualifier": None,
+                        "arguments": ["span_name"]
+                    }
+                ]
+            }
+        )
+
+        self.assertEqual(actual, expected)
+
+    # def test_java_ast_extractor_assignment(self):
+    #     """
+    #     Description: check if the extractor is capable of parsing Assignment expressions.
+    #     """
+
+    #     test_assignment_1 = Assignment(
+    #         expression=MemberReference(member="span"),
+    #         value=MethodInvocation(
+    #             member="spanBuilder",
+    #             qualifier="tracer",
+    #             arguments=[Literal(value="test")]
+    #         ),
+    #         type=Literal(value="=")
+    #     )
+
+    #     test_assignment_2 = Assignment(
+    #         expression=MemberReference(member="span"),
+    #         value=MethodInvocation(
+    #             member="startSpan",
+    #             qualifier=MethodInvocation(
+    #                 member="spanBuilder",
+    #                 qualifier="tracer",
+    #                 arguments=[Literal(value="example_span")]
+    #             ),
+    #             arguments=[]
+    #         ),
+    #         type="="
+    #     )
+
+    #     actual = (
+    #         java_ast_extractor(test_assignment_1),
+    #         java_ast_extractor(test_assignment_2),
+    #     )
+
+    #     expected = (
+    #         {
+    #             "operator": "=",
+    #             "expression": "span",
+    #             "value": {
+    #                 "method": "spanBuilder",
+    #                 "qualifier": "tracer",
+    #                 "arguments": ["test"]
+    #             }
+    #         },
+    #         {
+    #             "operator": "=",
+    #             "expression": "span",
+    #             "value": {
+    #                 "method": "startSpan",
+    #                 "qualifier": {
+    #                     "method": "spanBuilder",
+    #                     "qualifier": "tracer",
+    #                     "arguments": ["example_span"]
+    #                 },
+    #                 "arguments": []
+    #             }
+    #         }
+    #     )
+
+    #     breakpoint()
+
+    #     self.assertEqual(actual, expected)

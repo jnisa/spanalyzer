@@ -13,8 +13,9 @@ from spanalyzer.reports import terminal_report
 from spanalyzer.utils.operations import write_json
 from spanalyzer.utils.operations import folder_trim
 from spanalyzer.utils.operations import conciliation
+
 from spanalyzer.python.script import PythonScriptSniffer
-from spanalyzer.observability import TelemetryDetector
+from spanalyzer.python.detector import PythonTelemetryDetector
 
 from spanalyzer.constants.telemetry import TelemetryCall
 from spanalyzer.constants.exceptions import ExcludedPaths
@@ -121,7 +122,7 @@ class Engine:
 
                     telemetry_report.append({
                         **{'script': script},
-                        **self._has_telemetry_attrs(TelemetryDetector().run(script_code)),
+                        **self._has_telemetry_attrs(PythonTelemetryDetector().run(script_code)),
                     })
 
                 print(terminal_report(folder_trim(telemetry_report)))
@@ -132,7 +133,7 @@ class Engine:
                     entry = {}
                     script_code = ast.parse(open(script).read())
 
-                    for key, val in TelemetryDetector().run(script_code).items():
+                    for key, val in PythonTelemetryDetector().run(script_code).items():
                         entry[key] = [attr.__dict__() for attr in val]
 
                     script_sniffer = PythonScriptSniffer(script)

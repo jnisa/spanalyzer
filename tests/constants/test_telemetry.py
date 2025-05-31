@@ -2,9 +2,9 @@
 
 from unittest import TestCase
 
-from spanalyzer.constants.telemetry import TelemetryKeywords
+from spanalyzer.constants.telemetry import PythonTelemetryKeywords
 from spanalyzer.constants.telemetry import TelemetryCall
-class TestTelemetryKeywords(TestCase):
+class TestPythonTelemetryKeywords(TestCase):
 
     def test_telemetry_call_dict(self):
         """
@@ -25,11 +25,11 @@ class TestTelemetryKeywords(TestCase):
 
     def test_telemetry_keywords_values(self):
         """
-        Description: check if the values of the TelemetryKeywords enum are duly encapsulated in
+        Description: check if the values of the PythonTelemetryKeywords enum are duly encapsulated in
         a set.
         """
 
-        actual = TelemetryKeywords.values()
+        actual = PythonTelemetryKeywords.values()
         expected = {
             "get_tracer",
             "start_as_current_span",

@@ -6,8 +6,8 @@ import ast
 
 from unittest import TestCase
 
-from spanalyzer.observability import TelemetryDetector
 from spanalyzer.constants.telemetry import TelemetryCall
+from spanalyzer.python.detector import PythonTelemetryDetector
 
 
 def read_script(path: str) -> str:
@@ -24,17 +24,17 @@ def read_script(path: str) -> str:
     with open(path, 'r') as file:
         return file.read()
 
-class TestTelemetryDetector(TestCase):
+class TestPythonTelemetryDetector(TestCase):
     
     def setUp(self):
         """
         Set up the test case.
         """
 
-        test_script_1 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_1.py')
-        test_script_2 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_2.py')
-        test_script_3 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_3.py')
-        test_script_4 = os.path.join(os.path.dirname(__file__), 'samples', 'python', 'script_4.py')
+        test_script_1 = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'samples', 'python', 'script_1.py')
+        test_script_2 = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'samples', 'python', 'script_2.py')
+        test_script_3 = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'samples', 'python', 'script_3.py')
+        test_script_4 = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'samples', 'python', 'script_4.py')
 
         self.code_1 = ast.parse(read_script(test_script_1))
         self.code_2 = ast.parse(read_script(test_script_2))
@@ -47,7 +47,7 @@ class TestTelemetryDetector(TestCase):
         the telemetry calls that this method is looking for.
         """
         
-        detector = TelemetryDetector()
+        detector = PythonTelemetryDetector()
         
         
         actual = detector.run(self.code_1)
@@ -74,7 +74,7 @@ class TestTelemetryDetector(TestCase):
         telemetry calls of different types.
         """
         
-        detector = TelemetryDetector()
+        detector = PythonTelemetryDetector()
 
         actual = detector.run(self.code_2)
         expected = [
@@ -235,7 +235,7 @@ class TestTelemetryDetector(TestCase):
         and telemetry operators that haven't been tested yet.
         """
 
-        detector = TelemetryDetector()
+        detector = PythonTelemetryDetector()
 
         actual = detector.run(self.code_4)
         expected = {

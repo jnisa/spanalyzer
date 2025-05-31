@@ -13,7 +13,7 @@ from typing import List
 from spanalyzer.python.script import FunctionSpecs
 
 from spanalyzer.constants.telemetry import TelemetryCall
-from spanalyzer.constants.telemetry import TelemetryKeywords
+from spanalyzer.constants.telemetry import PythonTelemetryKeywords
 
 def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Dict]) -> Dict:
     """
@@ -124,7 +124,7 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Di
         return value in range(function.start_lineno, function.end_lineno)
     
       
-    base_structure = deepcopy(TelemetryKeywords.get_attributes_structure())
+    base_structure = deepcopy(PythonTelemetryKeywords.get_attributes_structure())
 
     output = {
         **base_structure,
