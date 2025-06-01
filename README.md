@@ -121,10 +121,25 @@ spanalyzer detailed --path /path/to/codebase --output /path/to/output/file
 
 The output file will be a file containing the same information pointed out above.
 
+
+### **4. Diagram**
+
+**[ADD A DIAGRAM HERE]**
+
+
 ---
 
 ### **A. Acknowledgements**
 
 There's some future work and implementations that should be held into account:
+- Add support for other telemetry resources;
+- Add support for other programming languages;
+- Add telemetry to the package itself.
+
+---
+
+### **B. Changelog**
+
 - [ ] Add support for other telemetry resources;
-- [ ] Add support for other programming languages;
+- [x] Add support for other programming languages;
+- [ ] Add telemetry to the package itself.

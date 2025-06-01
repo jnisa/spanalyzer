@@ -11,9 +11,10 @@ from typing import Dict
 from typing import List
 
 from spanalyzer.python.script import FunctionSpecs
+from spanalyzer.python.constants.keywords import PythonTelemetryKeywords
 
 from spanalyzer.constants.telemetry import TelemetryCall
-from spanalyzer.constants.telemetry import PythonTelemetryKeywords
+
 
 def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Dict]) -> Dict:
     """

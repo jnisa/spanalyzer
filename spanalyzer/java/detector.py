@@ -1,13 +1,18 @@
-from typing import Optional, Dict, List, Any
+# Script containing the logic behind the java script feature extraction
 
-from javalang.tree import MethodInvocation, ClassCreator
+from typing import Any
+from typing import Dict
+from typing import Optional
 
-from spanalyzer.utils.hunters import java_ast_extractor
+from javalang.tree import MethodInvocation
+from javalang.tree import ClassCreator
+
+from spanalyzer.java.hunters import java_ast_extractor
+from spanalyzer.java.constants.keywords import JavaTelemetryKeywords
+
 from spanalyzer.utils.operations import remove_call_duplicates
 
 from spanalyzer.constants.telemetry import TelemetryCall
-from spanalyzer.constants.telemetry import JavaTelemetryKeywords
-
 
 class JavaTelemetryDetector:
     """
@@ -52,9 +57,12 @@ class JavaTelemetryDetector:
         """
         Extract name from first argument of a Java method call.
         """
+
         if not node.arguments:
             return None
+        
         arg = node.arguments[0]
+
         return arg.value if hasattr(arg, 'value') else str(arg)
 
     def call_switcher(self, method_name: str, node: MethodInvocation | ClassCreator):
@@ -63,7 +71,7 @@ class JavaTelemetryDetector:
         """
 
         match method_name:
-            case JavaTelemetryKeywords.GET_TRACER:
+            case _ if method_name in self.tracer_operations:
                 if name := self._extract_name_from_args(node):
                     self.output['tracers'].append(TelemetryCall(
                         func=name,
@@ -108,6 +116,7 @@ class JavaTelemetryDetector:
         Returns:
             Dict: Categorized dictionary of telemetry calls
         """
+
         for path, node in tree:
             try:
                 if isinstance(node, MethodInvocation):

@@ -7,6 +7,7 @@ import ast
 from unittest import TestCase
 
 from spanalyzer.constants.telemetry import TelemetryCall
+
 from spanalyzer.python.detector import PythonTelemetryDetector
 
 

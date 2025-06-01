@@ -11,12 +11,12 @@ from ast import NodeVisitor
 
 from ast import walk
 
-from spanalyzer.utils.hunters import ast_extractor
+from spanalyzer.python.hunters import ast_extractor
+from spanalyzer.python.constants.keywords import PythonTelemetryKeywords
 
 from spanalyzer.utils.operations import remove_call_duplicates
 
 from spanalyzer.constants.telemetry import TelemetryCall
-from spanalyzer.constants.telemetry import PythonTelemetryKeywords
 
 class PythonTelemetryDetector(NodeVisitor):
     """

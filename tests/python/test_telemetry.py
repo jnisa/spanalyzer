@@ -2,8 +2,10 @@
 
 from unittest import TestCase
 
-from spanalyzer.constants.telemetry import PythonTelemetryKeywords
 from spanalyzer.constants.telemetry import TelemetryCall
+
+from spanalyzer.python.constants.keywords import PythonTelemetryKeywords
+
 class TestPythonTelemetryKeywords(TestCase):
 
     def test_telemetry_call_dict(self):
