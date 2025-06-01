@@ -73,9 +73,42 @@ class TestJavaHunter(TestCase):
         )
 
         test_method_invocation_3 = MethodInvocation(
-            member="end",
-            qualifier="span",
-            arguments=[],
+            member="addEvent",
+            qualifier=MemberReference(member="loadUserSpan"),
+            arguments=[
+                Literal(value='"operation_started"'),
+                MethodInvocation(
+                    member="build",
+                    arguments=[],
+                    qualifier=MethodInvocation(
+                        member="put",
+                        arguments=[
+                            Literal(value='"description"'),
+                            Literal(value='"Load User from DB"')
+                        ],
+                        qualifier=MethodInvocation(
+                            member="put",
+                            arguments=[
+                                Literal(value='"timestamp"'),
+                                MethodInvocation(
+                                    member="toString",
+                                    arguments=[],
+                                    qualifier=MethodInvocation(
+                                        member="now",
+                                        arguments=[],
+                                        qualifier=MemberReference(member="Instant")
+                                    )
+                                )
+                            ],
+                            qualifier=MethodInvocation(
+                                member="builder",
+                                arguments=[],
+                                qualifier=MemberReference(member="Attributes")
+                            )
+                        )
+                    )
+                )
+            ]
         )
 
         actual = (
@@ -87,17 +120,59 @@ class TestJavaHunter(TestCase):
             {
                 "method": "spanBuilder",
                 "qualifier": "tracer",
-                "arguments": ["test_span"]
+                "arguments": ["test_span"],
+                "selectors": None
             },
             {
                 "method": "setAttribute",
                 "qualifier": "span",
-                "arguments": ["test_key", "test_value"]
+                "arguments": ["test_key", "test_value"],
+                "selectors": None
             },
             {
-                "method": "end",
-                "qualifier": "span",
-                "arguments": []
+                "method": "addEvent",
+                "qualifier": "loadUserSpan",
+                "arguments": [
+                    "operation_started",
+                    {
+                        "method": "build",
+                        "qualifier": {
+                            "method": "put",
+                            "qualifier": {
+                                "method": "put",
+                                "qualifier": {
+                                    "method": "builder",
+                                    "qualifier": "Attributes",
+                                    "arguments": [],
+                                    "selectors": None
+                                },
+                                "arguments": [
+                                    "timestamp",
+                                    {
+                                        "method": "toString",
+                                        "qualifier": {
+                                            "method": "now",
+                                            "qualifier": "Instant",
+                                            "arguments": [],
+                                            "selectors": None
+                                        },
+                                        "arguments": [],
+                                        "selectors": None
+                                    }
+                                ],
+                                "selectors": None
+                            },
+                            "arguments": [
+                                "description",
+                                "Load User from DB"
+                            ],
+                            "selectors": None
+                        },
+                        "arguments": [],
+                        "selectors": None
+                    }
+                ],
+                "selectors": None
             }
         )
 
@@ -175,17 +250,20 @@ class TestJavaHunter(TestCase):
                     {
                         "method": "put",
                         "qualifier": "builder",
-                        "arguments": ["operation", "subtraction"]
+                        "arguments": ["operation", "subtraction"],
+                        "selectors": None
                     },
                     {
                         "method": "put",
                         "qualifier": None,
-                        "arguments": ["result", "123"]
+                        "arguments": ["result", "123"],
+                        "selectors": None
                     },
                     {
                         "method": "build",
                         "qualifier": None,
-                        "arguments": []
+                        "arguments": [],
+                        "selectors": None
                     }
                 ],
             },
@@ -196,7 +274,8 @@ class TestJavaHunter(TestCase):
                     {
                         "method": "spanBuilder",
                         "qualifier": None,
-                        "arguments": ["span_name"]
+                        "arguments": ["span_name"],
+                        "selectors": None
                     }
                 ]
             }
@@ -244,7 +323,8 @@ class TestJavaHunter(TestCase):
                 "value": {
                     "method": "spanBuilder",
                     "qualifier": "tracer",
-                    "arguments": ["test"]
+                    "arguments": ["test"],
+                    "selectors": None
                 },
                 "operator": "=",
             },
@@ -255,9 +335,11 @@ class TestJavaHunter(TestCase):
                     "qualifier": {
                         "method": "spanBuilder",
                         "qualifier": "tracer",
-                        "arguments": ["example_span"]
+                        "arguments": ["example_span"],
+                        "selectors": None
                     },
-                    "arguments": []
+                    "arguments": [],
+                    "selectors": None
                 },
                 "operator": "=",
             }
@@ -276,7 +358,8 @@ class TestJavaHunter(TestCase):
             operandr=MethodInvocation(
                 member="spanBuilder",
                 qualifier="tracer",
-                arguments=[Literal(value="test")]
+                arguments=[Literal(value="test")],
+                selectors=None
             ),
         )
         
@@ -290,7 +373,8 @@ class TestJavaHunter(TestCase):
                     operator=Literal(value="+"),
                     operandr=MemberReference(member="offset"),
                 )
-            ]
+            ],
+            selectors=None
         )
 
         test_binary_operation_3 = MethodInvocation(
@@ -306,7 +390,8 @@ class TestJavaHunter(TestCase):
                         operandr=MemberReference(member="start"),
                     ),
                 )
-            ]
+            ],
+            selectors=None
         )
 
         actual = (
@@ -314,44 +399,45 @@ class TestJavaHunter(TestCase):
             java_ast_extractor(test_binary_operation_2),
             java_ast_extractor(test_binary_operation_3)
         )
-
         expected = (
             {
-                "operandl": "span",
-                "operator": "=",
-                "operandr": {
-                    "method": "spanBuilder",
-                    "qualifier": "tracer",
-                    "arguments": ["test"]
-                },
+                'operandl': 'span',
+                'operator': '=',
+                'operandr': {
+                    'method': 'spanBuilder',
+                    'qualifier': 'tracer',
+                    'arguments': ['test'],
+                    'selectors': None
+                }
             },
             {
-                "method": "setAttribute",
-                "qualifier": "span",
-                "arguments": [
-                        "request_time", 
-                        {
-                            "operandl": "processingTime",
-                            "operator": "+",
-                            "operandr": "offset",
+                'method': 'setAttribute',
+                'qualifier': 'span',
+                'arguments': [
+                    'request_time',
+                    {
+                        'operandl': 'processingTime',
+                        'operator': '+',
+                        'operandr': 'offset'
+                    }
+                ],
+                'selectors': None
+            },
+            {
+                'method': 'println',
+                'qualifier': 'System.out',
+                'arguments': [
+                    {
+                        'operandl': 'Span delay: ',
+                        'operator': '+',
+                        'operandr': {
+                            'operandl': 'end',
+                            'operator': '-',
+                            'operandr': 'start'
                         }
-                ]
-            },
-            {
-                "method": "println",
-                "qualifier": "System.out",
-                "arguments": [{
-                        "operandl": "Span delay: ",
-                        "operator": "+",
-                        "operandr": {
-                            "operandl": "end",
-                            "operator": "-",
-                            "operandr": "start",
-                        },
-                    },
-                ]
-            }
-        )
+                    }
+                ],
+            'selectors': None})
 
         self.assertEqual(actual, expected)
         
@@ -434,7 +520,8 @@ class TestJavaHunter(TestCase):
                 "body": {
                     "method": "setAttribute",
                     "qualifier": "span",
-                    "arguments": ["test"]
+                    "arguments": ["test"],
+                    "selectors": None
                 }
             },
             {
@@ -456,11 +543,13 @@ class TestJavaHunter(TestCase):
                                     "path",
                                     "method",
                                     "method"
-                                ]
+                                ],
+                                "selectors": None
                             }
-                        ]
+                        ],
+                        "selectors": None
                     }
-                ]
+                ],
             }
         )
 
@@ -531,7 +620,8 @@ class TestJavaHunter(TestCase):
                             'errorType',
                             'error.message',
                             'errorMessage'
-                        ]
+                        ],
+                        "selectors": None
                     }
                 },
                 {
@@ -541,7 +631,8 @@ class TestJavaHunter(TestCase):
                         'arguments': [
                             'StatusCode.ERROR', 
                             'errorDescription'
-                        ]
+                        ],
+                        "selectors": None
                     }
                 },
                 {
@@ -550,7 +641,8 @@ class TestJavaHunter(TestCase):
                         'qualifier': 'span',
                         'arguments': [
                             'exception'
-                        ]
+                        ],
+                        "selectors": None
                     }
                 }
             ],

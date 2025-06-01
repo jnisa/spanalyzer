@@ -1,8 +1,8 @@
 # Script containing the logic behind the java script feature extraction
 
+from typing import Any
 from typing import Union
 from typing import Optional
-from typing import Any
 
 from javalang.tree import Literal
 from javalang.tree import MemberReference
@@ -64,6 +64,7 @@ def java_ast_extractor(node: Any) -> Optional[Union[str, dict, list]]:
                     else java_ast_extractor(node.qualifier)
                 ),
                 "arguments": [java_ast_extractor(arg) for arg in node.arguments],
+                "selectors": [java_ast_extractor(selector) for selector in node.selectors] if node.selectors else None,
             }
 
         case ClassCreator():

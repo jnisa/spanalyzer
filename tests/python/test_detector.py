@@ -296,3 +296,21 @@ class TestPythonTelemetryDetector(TestCase):
         }
 
         self.assertEqual(actual, expected)
+
+    def test_telemetry_detector_empty_script(self):
+        """
+        Description: Check if the telemetry detector can visit an empty script.
+        """
+
+        detector = PythonTelemetryDetector()
+        
+        actual = detector.run(self.code_3)
+        expected = {
+            'tracers': [],
+            'spans': [],
+            'attributes': [],
+            'events': [],
+            'counter': [],
+        }
+
+        self.assertEqual(actual, expected)
