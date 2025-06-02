@@ -1,7 +1,17 @@
-[project]
+[tool.poetry]
 name = "spanalyzer"
-version = "0.1.0"
-dependencies = []
+version = "1.0.2"
+description = "A tool to analyze telemetry implementation in codebases"
+authors = ["Joao Nisa <joao.je.nisa@gmail.com>"]
+readme = "README.md"
 
 [project.scripts]
 spanalyzer = "spanalyzer.cli:main"
+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

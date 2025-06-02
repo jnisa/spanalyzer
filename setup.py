@@ -12,7 +12,7 @@ install_requires = [
 
 setup(
     name="spanalyzer",
-    version="1.0.0",
+    version="1.0.2",
     description="A tool to analyze telemetry implementation in codebases",
     author="Joao Nisa",
     author_email="joao.je.nisa@gmail.com",

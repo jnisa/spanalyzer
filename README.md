@@ -18,8 +18,6 @@
 
 **Spanalyzer** is a Python package that helps you analyze and audit the telemetry instrumentation (e.g., spans, metrics, events) within your codebase.
 
-The module [`spanalyzer.observability`](./spanalyzer/observability.py) includes the keywords and logic used to scan and extract telemetry data from Python scripts.
-
 Once analyzed, the package generates a report summarizing or detailing telemetry coverage across your codebase.
 
 ---
@@ -38,7 +36,8 @@ pip install spanalyzer
 
 The course of action of this package encompasses two procedures:
 1. provide the path to the codebase you want to analyze;
-2. pick the type of report you want to generate (**_basic_** or **_detailed_**).
+2. pick the type of report you want to generate (**_basic_** or **_detailed_**);
+3. provide the language of the codebase (**_python_** and **_java_** are currently supported).
 
 #### **3.1. Basic Report**
 
@@ -226,11 +225,6 @@ spanalyzer detailed --path /path/to/codebase --output /path/to/output/file --lan
 ```
 
 The output file will be a file containing the same information pointed out above.
-
-
-### **4. Diagram**
-
-**[ADD A DIAGRAM HERE]**
 
 
 ---
