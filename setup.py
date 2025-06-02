@@ -3,24 +3,23 @@
 from setuptools import setup
 from setuptools import find_packages
 
-entry_points = (
-    {
-        "flake8.extension": [
-            "OTEL = flake8_otel:Flake8OTELAudit",
-        ],
-    },
-)
 
 install_requires = [
-    "flake8",
-    "ast",
-    "pytest",
+    "javalang",
+    "setuptools",
+    "python-dotenv",
 ]
 
 setup(
     name="spanalyzer",
-    version="0.1.0",
+    version="1.0.0",
+    description="A tool to analyze telemetry implementation in codebases",
+    author="Joao Nisa",
+    author_email="joao.je.nisa@gmail.com",
     packages=find_packages(),
+    install_requires=install_requires,
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     entry_points={
         "console_scripts": ["spanalyzer = spanalyzer.cli:main"],
     },

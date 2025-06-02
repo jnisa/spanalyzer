@@ -4,7 +4,6 @@ from opentelemetry import trace
 
 tracer = trace.get_tracer("script_1_tracer")
 
-
 def random_function():
     """
     Random function that will contain the following opentelemetry resources:

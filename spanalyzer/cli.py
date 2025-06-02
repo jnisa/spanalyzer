@@ -10,7 +10,26 @@ def main():
     Main function for the spanalyzer CLI.
     """
 
-    parser = argparse.ArgumentParser(description="Spanalyzer")
+    description = """
+    Spanalyzer - OpenTelemetry Code Analysis Tool
+
+    A static code analysis tool that detects and reports OpenTelemetry instrumentation
+    in your codebase. It analyzes Python and Java source files to identify:
+    - Tracer definitions
+    - Span operations
+    - Attribute settings
+    - Event recordings
+    - Counter metrics
+
+    The tool provides two report types:
+    - basic: A terminal-based overview of telemetry coverage
+    - detailed: A comprehensive JSON report of all telemetry operations
+    """
+
+    parser = argparse.ArgumentParser(
+        description=description,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     parser.add_argument(
         "report_type",

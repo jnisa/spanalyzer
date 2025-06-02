@@ -156,7 +156,8 @@ class Engine:
                         })
 
                     except Exception as e:
-                        print(f"[!] Error parsing script {script}: {e}")
+                        # TODO. find out later how to handle this
+                        # print(f"[!] Error parsing script {script}: {e}")
                         continue
 
                 print(terminal_report(folder_trim(telemetry_report)))
@@ -181,7 +182,8 @@ class Engine:
                         telemetry_report[script] = conciliation(script_data, telemetry_data)
 
                     except Exception as e:
-                        print(f"[!] Error processing script {script}: {e}")
+                        # TODO. find out later how to handle this
+                        # print(f"[!] Error processing script {script}: {e}")
                         continue
 
                 write_json(telemetry_report, self.output_path)
