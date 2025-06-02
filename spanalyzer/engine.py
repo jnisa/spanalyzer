@@ -122,63 +122,69 @@ class Engine:
         """
         Spanalyzer engine.
 
-        Where all of the routines will be executed - i.e. the script sniffing, the telemetry specs capture, etc.
-
-        Through this method the engine will be performing the following operation by this order:
-        1. Obtain the list of python scripts in the folder;
-        2. Sniff the scripts to capture the functions;
-        3. Capture the telemetry specs of these functions;
-        4. Conciliate the telemetry with the script results;
-        5. Generate the report.
+        Executes the following in order:
+        1. Obtain the list of scripts in the folder;
+        2. Parse the scripts;
+        3. Detect telemetry specs;
+        4. Sniff function definitions;
+        5. Conciliate results;
+        6. Generate the report.
         """
-
+        
         telemetry_report = [] if self.report_type == "basic" else {}
         scripts_lst = self._list_scripts(self.folder_path)
 
-        detector = JsDetector() if self.language == "java" else PyDetector()
-
-        sniffer = (
-            lambda script: JsSniffer(script)
+        detector_class = JsDetector if self.language == "java" else PyDetector
+        sniffer_class = JsSniffer if self.language == "java" else PySniffer
+        parser_func = (
+            lambda path: javalang.parse.parse(open(path).read())
             if self.language == "java"
-            else PySniffer(script)
+            else ast.parse(open(path).read())
         )
-        parser = (
-            lambda script: javalang.parse.parse(open(script).read())
-            if self.language == "java"
-            else ast.parse(open(script).read())
-        )
-
-        # TODO. trim the scripts name on the detailed report
 
         match self.report_type:
             case "basic":
                 for script in scripts_lst:
-                    script_code = parser(script)
+                    try:
+                        script_code = parser_func(script)
+                        detector = detector_class()
+                        telemetry = self._has_telemetry_attrs(detector.run(script_code))
 
-                    telemetry_report.append(
-                        {
-                            **{"script": script},
-                            **self._has_telemetry_attrs(detector.run(script_code)),
-                        }
-                    )
+                        telemetry_report.append({
+                            "script": script,
+                            **telemetry
+                        })
+
+                    except Exception as e:
+                        print(f"[!] Error parsing script {script}: {e}")
+                        continue
 
                 print(terminal_report(folder_trim(telemetry_report)))
 
             case "detailed":
                 for script in scripts_lst:
-                    entry = {}
-                    script_code = parser(script)
+                    try:
+                        script_code = parser_func(script)
+                        detector = detector_class()
+                        detector_output = detector.run(script_code)
 
-                    for key, val in detector.run(script_code).items():
-                        entry[key] = [attr.__dict__() for attr in val]
+                        # Build telemetry entries
+                        telemetry_data = {
+                            key: [attr.__dict__() for attr in val]
+                            for key, val in detector_output.items()
+                        }
 
-                    script_sniffer = sniffer(script)
-                    script_sniffer.run()
-                    script_data = script_sniffer.functions_list
+                        sniffer = sniffer_class(script)
+                        sniffer.run()
+                        script_data = sniffer.functions_list
 
-                    telemetry_report.update({script: conciliation(script_data, entry)})
+                        telemetry_report[script] = conciliation(script_data, telemetry_data)
 
-                write_json(folder_trim(telemetry_report), self.output_path)
+                    except Exception as e:
+                        print(f"[!] Error processing script {script}: {e}")
+                        continue
+
+                write_json(telemetry_report, self.output_path)
 
             case _:
                 raise ValueError(f"Invalid report type: {self.report_type}")
