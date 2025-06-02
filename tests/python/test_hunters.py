@@ -17,7 +17,6 @@ from spanalyzer.python.hunters import ast_extractor
 
 
 class TestHunters(TestCase):
-
     def test_ast_extractor_constant(self):
         """
         Description: check if the extractor is capable of dealing with ast constant values.
@@ -72,8 +71,8 @@ class TestHunters(TestCase):
         """
 
         test_dict = Dict(
-            keys=[Constant(value="key1"), Constant(value="key2")], 
-            values=[Constant(value="value1"), Constant(value="value2")]
+            keys=[Constant(value="key1"), Constant(value="key2")],
+            values=[Constant(value="value1"), Constant(value="value2")],
         )
 
         actual = ast_extractor(test_dict)
@@ -86,10 +85,13 @@ class TestHunters(TestCase):
         Description: check if the extractor is capable of dealing with ast call values.
         """
 
-        test_call = Call(func=Name(id="test"), args=[Constant(value="test1"), Constant(value="test2")])
+        test_call = Call(
+            func=Name(id="test"),
+            args=[Constant(value="test1"), Constant(value="test2")],
+        )
 
         actual = ast_extractor(test_call)
-        expected = {'func': 'test', 'args': ['test1', 'test2']}
+        expected = {"func": "test", "args": ["test1", "test2"]}
 
         self.assertEqual(actual, expected)
 
@@ -101,22 +103,18 @@ class TestHunters(TestCase):
 
         test_expr = Expr(
             value=Call(
-                func=Attribute(
-                    value=Name(id='test_counter'),
-                    attr='add'
-                ),
+                func=Attribute(value=Name(id="test_counter"), attr="add"),
                 args=[
                     Constant(value=2),
                     Dict(
-                        keys=[Constant(value='key1')],
-                        values=[Constant(value='value1')]
-                    )
-                ]
+                        keys=[Constant(value="key1")], values=[Constant(value="value1")]
+                    ),
+                ],
             )
         )
 
         actual = ast_extractor(test_expr)
-        expected = {'func': 'test_counter.add', 'args': [2, {'key1': 'value1'}]}
+        expected = {"func": "test_counter.add", "args": [2, {"key1": "value1"}]}
 
         self.assertEqual(actual, expected)
 
@@ -129,29 +127,26 @@ class TestHunters(TestCase):
         test_expr = Expr(
             value=Call(
                 func=Attribute(
-                    value=Name(id='span', ctx=Load()),
-                    attr='add_event',
-                    ctx=Load()
+                    value=Name(id="span", ctx=Load()), attr="add_event", ctx=Load()
                 ),
-                args=[
-                    Constant(value='custom event')
-                ],
+                args=[Constant(value="custom event")],
                 keywords=[
                     keyword(
-                        arg='attributes',
+                        arg="attributes",
                         value=Dict(
-                            keys=[Constant(value='key1')],
-                            values=[Constant(value='value1')]
-                        )
+                            keys=[Constant(value="key1")],
+                            values=[Constant(value="value1")],
+                        ),
                     )
-                ]
+                ],
             )
         )
 
         actual = ast_extractor(test_expr)
         expected = {
-            'func': 'span.add_event',
-            'args': ['custom event'], 'keywords': {'attributes': {'key1': 'value1'}}
+            "func": "span.add_event",
+            "args": ["custom event"],
+            "keywords": {"attributes": {"key1": "value1"}},
         }
 
         self.assertEqual(actual, expected)
@@ -165,57 +160,55 @@ class TestHunters(TestCase):
         test_expr = Expr(
             value=Call(
                 func=Attribute(
-                    value=Name(id='span', ctx=Load()),
-                    attr='add_event',
-                    ctx=Load()
+                    value=Name(id="span", ctx=Load()), attr="add_event", ctx=Load()
                 ),
                 args=[
-                    Constant(value='data_processed'),
+                    Constant(value="data_processed"),
                     Dict(
                         keys=[
-                            Constant(value='input_size'),
-                            Constant(value='output_size')
+                            Constant(value="input_size"),
+                            Constant(value="output_size"),
                         ],
                         values=[
                             Call(
-                                func=Name(id='len', ctx=Load()),
+                                func=Name(id="len", ctx=Load()),
                                 args=[
                                     Subscript(
-                                        value=Name(id='raw_data', ctx=Load()),
-                                        slice=Constant(value='data'),
-                                        ctx=Load()
+                                        value=Name(id="raw_data", ctx=Load()),
+                                        slice=Constant(value="data"),
+                                        ctx=Load(),
                                     )
                                 ],
-                                keywords=[]
+                                keywords=[],
                             ),
                             Call(
-                                func=Name(id='len', ctx=Load()),
-                                args=[Name(id='processed_data', ctx=Load())],
-                                keywords=[]
-                            )
-                        ]
-                    )
+                                func=Name(id="len", ctx=Load()),
+                                args=[Name(id="processed_data", ctx=Load())],
+                                keywords=[],
+                            ),
+                        ],
+                    ),
                 ],
-                keywords=[]
+                keywords=[],
             )
         )
 
         actual = ast_extractor(test_expr)
         expected = {
-            'func': 'span.add_event',
-            'args': [
-                'data_processed', 
+            "func": "span.add_event",
+            "args": [
+                "data_processed",
                 {
-                    'input_size': {
-                        'func': 'len', 
-                        'args': ['raw_data'],
+                    "input_size": {
+                        "func": "len",
+                        "args": ["raw_data"],
                     },
-                    'output_size': {
-                        'func': 'len',
-                        'args': ['processed_data'],
+                    "output_size": {
+                        "func": "len",
+                        "args": ["processed_data"],
                     },
-                }
-            ]
+                },
+            ],
         }
 
         self.assertEqual(actual, expected)
@@ -229,80 +222,82 @@ class TestHunters(TestCase):
         test_expr = Expr(
             value=Call(
                 func=Attribute(
-                    value=Name(id='load_user_span', ctx=Load()),
-                    attr='add_events',
-                    ctx=Load()
+                    value=Name(id="load_user_span", ctx=Load()),
+                    attr="add_events",
+                    ctx=Load(),
                 ),
                 args=[
                     List(
                         elts=[
                             Dict(
                                 keys=[
-                                    Constant(value='name'),
-                                    Constant(value='timestamp'),
-                                    Constant(value='description')
+                                    Constant(value="name"),
+                                    Constant(value="timestamp"),
+                                    Constant(value="description"),
                                 ],
                                 values=[
-                                    Constant(value='operation_started'),
+                                    Constant(value="operation_started"),
                                     Call(
                                         func=Attribute(
-                                            value=Name(id='time', ctx=Load()),
-                                            attr='time',
-                                            ctx=Load()
+                                            value=Name(id="time", ctx=Load()),
+                                            attr="time",
+                                            ctx=Load(),
                                         ),
                                         args=[],
-                                        keywords=[]
+                                        keywords=[],
                                     ),
-                                    Constant(value='Load User from DB')
-                                ]
+                                    Constant(value="Load User from DB"),
+                                ],
                             ),
                             Dict(
                                 keys=[
-                                    Constant(value='name'),
-                                    Constant(value='timestamp'),
-                                    Constant(value='description')
+                                    Constant(value="name"),
+                                    Constant(value="timestamp"),
+                                    Constant(value="description"),
                                 ],
                                 values=[
-                                    Constant(value='operation_completed'),
+                                    Constant(value="operation_completed"),
                                     Call(
                                         func=Attribute(
-                                            value=Name(id='time', ctx=Load()),
-                                            attr='time',
-                                            ctx=Load()
+                                            value=Name(id="time", ctx=Load()),
+                                            attr="time",
+                                            ctx=Load(),
                                         ),
                                         args=[],
-                                        keywords=[]
+                                        keywords=[],
                                     ),
-                                    Constant(value='User loaded from DB')
-                                ]
-                            )
+                                    Constant(value="User loaded from DB"),
+                                ],
+                            ),
                         ],
-                        ctx=Load()
+                        ctx=Load(),
                     )
                 ],
-                keywords=[]
+                keywords=[],
             )
         )
 
         actual = ast_extractor(test_expr)
         expected = {
-            'func': 'load_user_span.add_events',
-            'args': [
+            "func": "load_user_span.add_events",
+            "args": [
                 [
                     {
-                        'name': 'operation_started', 
-                        'timestamp': {
-                            'func': 'time.time', 'args': [],
+                        "name": "operation_started",
+                        "timestamp": {
+                            "func": "time.time",
+                            "args": [],
                         },
-                        'description': 'Load User from DB'
+                        "description": "Load User from DB",
                     },
                     {
-                        'name': 'operation_completed', 
-                        'timestamp': {
-                            'func': 'time.time', 'args': [],
+                        "name": "operation_completed",
+                        "timestamp": {
+                            "func": "time.time",
+                            "args": [],
                         },
-                        'description': 'User loaded from DB'
-                    }
+                        "description": "User loaded from DB",
+                    },
                 ],
             ],
         }

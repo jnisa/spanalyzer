@@ -23,11 +23,12 @@ from spanalyzer.java.detector import JavaTelemetryDetector as JsDetector
 
 from spanalyzer.constants.exceptions import ExcludedPaths
 
+
 class Engine:
     """
     Class containing the engine that will be capturing all the opentelemetry operations in a certain folder.
 
-    This class will be used to navigate through a nested folder structure - like python projects i.e. 
+    This class will be used to navigate through a nested folder structure - like python projects i.e.
     python packages, modules, etc. -, and capture all the opentelemetry operations in the scripts.
 
     Along with that, it will also capture the telemetry specs of these operations, to generate a telemetry
@@ -40,7 +41,13 @@ class Engine:
         output_path [str]: the path to the output file
     """
 
-    def __init__(self, folder_path: str, report_type: str, language: str = 'python', output_path: str = 'spanalyzer_report.json'):
+    def __init__(
+        self,
+        folder_path: str,
+        report_type: str,
+        language: str = "python",
+        output_path: str = "spanalyzer_report.json",
+    ):
         """
         Initialize the engine.
         """
@@ -52,7 +59,9 @@ class Engine:
 
         # TODO. validate the language and report type
 
-    def _list_scripts(self, folder_path: Path, excluded_paths: set[str] = ExcludedPaths.values()) -> List[str]:
+    def _list_scripts(
+        self, folder_path: Path, excluded_paths: set[str] = ExcludedPaths.values()
+    ) -> List[str]:
         """
         List all the scripts in the folder.
 
@@ -64,16 +73,19 @@ class Engine:
             [List[str]]: the list of python scripts in the folder
         """
 
-        file_extensions = '.py' if self.language == 'python' else '.java'
+        file_extensions = ".py" if self.language == "python" else ".java"
 
         return [
             os.path.join(root, file)
             for root, dirs, files in os.walk(folder_path)
             for file in files
-            if file.endswith(file_extensions) and
-            not any(excluded_path in os.path.join(root, file) for excluded_path in excluded_paths)
+            if file.endswith(file_extensions)
+            and not any(
+                excluded_path in os.path.join(root, file)
+                for excluded_path in excluded_paths
+            )
         ]
-    
+
     def _has_telemetry_attrs(self, data: Dict) -> Dict:
         """
         Check if the telemetry attributes are empty.
@@ -104,10 +116,7 @@ class Engine:
         }
         """
 
-        return {
-            key: True if len(val) > 0 else False
-            for key, val in data.items()
-        }
+        return {key: True if len(val) > 0 else False for key, val in data.items()}
 
     def run(self):
         """
@@ -123,31 +132,40 @@ class Engine:
         5. Generate the report.
         """
 
-        telemetry_report = [] if self.report_type == 'basic' else {}
-        scripts_lst = self._list_scripts(self.folder_path) if self.language == 'java' else self._list_scripts(self.folder_path)
+        telemetry_report = [] if self.report_type == "basic" else {}
+        scripts_lst = self._list_scripts(self.folder_path)
 
-        detector = JsDetector() if self.language == 'java' else PyDetector()
-        sniffer = lambda script: JsSniffer(script) if self.language == 'java' else PySniffer(script)
+        detector = JsDetector() if self.language == "java" else PyDetector()
 
-        parser = lambda script: javalang.parse.parse(open(script).read()) if self.language == 'java' else ast.parse(open(script).read())
+        sniffer = (
+            lambda script: JsSniffer(script)
+            if self.language == "java"
+            else PySniffer(script)
+        )
+        parser = (
+            lambda script: javalang.parse.parse(open(script).read())
+            if self.language == "java"
+            else ast.parse(open(script).read())
+        )
 
         # TODO. trim the scripts name on the detailed report
 
         match self.report_type:
-            case 'basic':
+            case "basic":
                 for script in scripts_lst:
                     script_code = parser(script)
 
-                    telemetry_report.append({
-                        **{'script': script},
-                        **self._has_telemetry_attrs(detector.run(script_code)),
-                    })
+                    telemetry_report.append(
+                        {
+                            **{"script": script},
+                            **self._has_telemetry_attrs(detector.run(script_code)),
+                        }
+                    )
 
                 print(terminal_report(folder_trim(telemetry_report)))
 
-            case 'detailed':
+            case "detailed":
                 for script in scripts_lst:
-                    
                     entry = {}
                     script_code = parser(script)
 
@@ -158,11 +176,9 @@ class Engine:
                     script_sniffer.run()
                     script_data = script_sniffer.functions_list
 
-                    telemetry_report.update({
-                        script: conciliation(script_data, entry)
-                    })
-                
-                write_json(telemetry_report, self.output_path)
+                    telemetry_report.update({script: conciliation(script_data, entry)})
+
+                write_json(folder_trim(telemetry_report), self.output_path)
 
             case _:
                 raise ValueError(f"Invalid report type: {self.report_type}")

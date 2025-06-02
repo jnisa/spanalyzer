@@ -44,63 +44,59 @@ def ast_extractor(node: AST) -> Optional[Union[str, dict, list, Any]]:
     match node:
         case Constant():
             return node.value
-            
+
         case Name():
             return node.id
-            
+
         case Attribute():
             base = ast_extractor(node.value)
             return f"{base}.{node.attr}" if base else node.attr
-            
+
         case List():
             return [ast_extractor(elt) for elt in node.elts]
-            
+
         case Dict():
             return {
                 ast_extractor(k): ast_extractor(v)
                 for k, v in zip(node.keys, node.values)
             }
-            
+
         case Call():
             call_data = {
-                'func': ast_extractor(node.func),
-                'args': [ast_extractor(arg) for arg in node.args]
+                "func": ast_extractor(node.func),
+                "args": [ast_extractor(arg) for arg in node.args],
             }
 
             try:
-                keywords = {
-                    kw.arg: ast_extractor(kw.value)
-                    for kw in node.keywords
-                }
+                keywords = {kw.arg: ast_extractor(kw.value) for kw in node.keywords}
 
                 if keywords:
-                    call_data['keywords'] = keywords
-            
+                    call_data["keywords"] = keywords
+
             except (AttributeError, TypeError):
                 pass
-            
+
             return call_data
-        
+
         case Expr():
             expr_data = {
-                'func': ast_extractor(node.value.func),
-                'args': [ast_extractor(arg) for arg in node.value.args]
+                "func": ast_extractor(node.value.func),
+                "args": [ast_extractor(arg) for arg in node.value.args],
             }
-            
+
             try:
                 keywords = {
-                    kw.arg: ast_extractor(kw.value)
-                    for kw in node.value.keywords
+                    kw.arg: ast_extractor(kw.value) for kw in node.value.keywords
                 }
                 if keywords:
-                    expr_data['keywords'] = keywords
+                    expr_data["keywords"] = keywords
             except (AttributeError, TypeError):
                 pass
-            
+
             return expr_data
-        
+
         case Subscript():
             return ast_extractor(node.value)
-                
+
         case _:
             return None

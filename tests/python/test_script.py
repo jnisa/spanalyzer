@@ -11,31 +11,41 @@ from unittest import TestCase
 from spanalyzer.python.script import FunctionSpecs
 from spanalyzer.python.script import PythonScriptSniffer
 
+
 class TestPythonScriptSniffer(TestCase):
-    
     def setUp(self):
         """
         Description: Set up the test environment.
         """
 
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        
-        self.script_1 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_1.py')
-        self.script_2 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_2.py')
-        self.script_3 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_3.py')
-        self.script_4 = os.path.join(base_path, 'tests', 'samples', 'python', 'script_4.py')
+
+        self.script_1 = os.path.join(
+            base_path, "tests", "samples", "python", "script_1.py"
+        )
+        self.script_2 = os.path.join(
+            base_path, "tests", "samples", "python", "script_2.py"
+        )
+        self.script_3 = os.path.join(
+            base_path, "tests", "samples", "python", "script_3.py"
+        )
+        self.script_4 = os.path.join(
+            base_path, "tests", "samples", "python", "script_4.py"
+        )
 
     def test_has_docstring_basic(self):
         """
         Description: Test that the function can duly capture a function with a very basic docstring.
         """
 
-        test_function = textwrap.dedent('''
+        test_function = textwrap.dedent(
+            '''
         def test_function():
             """
             This is a test function.
             """
-        ''')
+        '''
+        )
 
         test_function_ast = ast.parse(test_function)
         test_function_node = test_function_ast.body[0]
@@ -43,7 +53,7 @@ class TestPythonScriptSniffer(TestCase):
         sniffer = PythonScriptSniffer(test_function)
 
         actual = sniffer._has_docstring(test_function_node)
-        expected = 'This is a test function.'
+        expected = "This is a test function."
 
         self.assertEqual(actual, expected)
 
@@ -53,7 +63,8 @@ class TestPythonScriptSniffer(TestCase):
         containing multiple lines with input arguments speciifications, examples, etc.)
         """
 
-        test_function = textwrap.dedent('''
+        test_function = textwrap.dedent(
+            '''
         def test_function():
             """
             This is a test function.
@@ -69,7 +80,8 @@ class TestPythonScriptSniffer(TestCase):
             Returns:
                 int: the result of the function
             """
-        ''')
+        '''
+        )
 
         test_function_ast = ast.parse(test_function)
         test_function_node = test_function_ast.body[0]
@@ -77,7 +89,7 @@ class TestPythonScriptSniffer(TestCase):
         sniffer = PythonScriptSniffer(test_function)
 
         actual = sniffer._has_docstring(test_function_node)
-        expected = '''This is a test function.
+        expected = """This is a test function.
 
     _Example_:
     >>> test_function(1, 'test')
@@ -88,7 +100,7 @@ class TestPythonScriptSniffer(TestCase):
         arg2 [str]: the second argument
 
     Returns:
-        int: the result of the function'''
+        int: the result of the function"""
 
         self.assertEqual(actual, expected)
 
@@ -97,10 +109,12 @@ class TestPythonScriptSniffer(TestCase):
         Description: when the function doesn't have a docstring.
         """
 
-        test_function = textwrap.dedent('''
+        test_function = textwrap.dedent(
+            """
         def test_function():
             pass
-        ''')
+        """
+        )
 
         test_function_ast = ast.parse(test_function)
         test_function_node = test_function_ast.body[0]
@@ -129,15 +143,15 @@ class TestPythonScriptSniffer(TestCase):
         actual = script_sniffer.functions_list
         expected = [
             FunctionSpecs(
-                name='random_function',
+                name="random_function",
                 docstring=expected_docstring,
                 start_lineno=7,
-                end_lineno=16
+                end_lineno=16,
             )
         ]
 
         self.assertEqual(actual, expected)
-    
+
     def test_script_sniffer_complex(self):
         """
         Description: test the sniffer operating with a complex script (i.e. a script with multiple functions with
@@ -182,28 +196,28 @@ class TestPythonScriptSniffer(TestCase):
         actual = script_sniffer.functions_list
         expected = [
             FunctionSpecs(
-                name='random_function_1',
+                name="random_function_1",
                 docstring=expected_docstring_1,
                 start_lineno=17,
-                end_lineno=38
+                end_lineno=38,
             ),
             FunctionSpecs(
-                name='random_function_2',
+                name="random_function_2",
                 docstring=expected_docstring_2,
                 start_lineno=40,
-                end_lineno=71
+                end_lineno=71,
             ),
             FunctionSpecs(
-                name='random_function_3',
+                name="random_function_3",
                 docstring=expected_docstring_3,
                 start_lineno=73,
-                end_lineno=86
+                end_lineno=86,
             ),
             FunctionSpecs(
-                name='random_function_4',
+                name="random_function_4",
                 docstring=expected_docstring_4,
                 start_lineno=88,
-                end_lineno=109
+                end_lineno=109,
             ),
         ]
 
@@ -233,23 +247,23 @@ class TestPythonScriptSniffer(TestCase):
         actual = script_sniffer.functions_list
         expected = [
             FunctionSpecs(
-                name='fetch_mock_data',
+                name="fetch_mock_data",
                 docstring="""Simulate async data fetch with delay.""",
                 start_lineno=12,
-                end_lineno=15
+                end_lineno=15,
             ),
             FunctionSpecs(
-                name='process_mock_data',
+                name="process_mock_data",
                 docstring="""Simulate async data processing.""",
                 start_lineno=17,
-                end_lineno=20
+                end_lineno=20,
             ),
             FunctionSpecs(
-                name='async_fetch_data',
+                name="async_fetch_data",
                 docstring="""Async function that fetches data with telemetry.""",
                 start_lineno=22,
-                end_lineno=41
-            )
+                end_lineno=41,
+            ),
         ]
 
         self.assertEqual(actual, expected)

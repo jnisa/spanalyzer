@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Dict
 from typing import List
 
+
 class JavaTelemetryKeywords(str, Enum):
     """
     Enum containing OpenTelemetry trace keywords used in Java.
@@ -56,9 +57,9 @@ class JavaTelemetryKeywords(str, Enum):
         Get the attributes structure for categorized OpenTelemetry usage in Java.
         """
         return {
-            'tracers': [],
-            'spans': [],
-            'attributes': [],
-            'events': [],
-            'counter': [],
+            "tracers": [],
+            "spans": [],
+            "attributes": [],
+            "events": [],
+            "counter": [],
         }

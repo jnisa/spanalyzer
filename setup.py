@@ -3,16 +3,18 @@
 from setuptools import setup
 from setuptools import find_packages
 
-entry_points={
-    "flake8.extension": [
-        "OTEL = flake8_otel:Flake8OTELAudit",
-    ],
-},
+entry_points = (
+    {
+        "flake8.extension": [
+            "OTEL = flake8_otel:Flake8OTELAudit",
+        ],
+    },
+)
 
-install_requires=[
-    'flake8',
-    'ast',
-    'pytest',
+install_requires = [
+    "flake8",
+    "ast",
+    "pytest",
 ]
 
 setup(
@@ -20,8 +22,6 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     entry_points={
-        'console_scripts': [
-            'spanalyzer = spanalyzer.cli:main'
-        ],
+        "console_scripts": ["spanalyzer = spanalyzer.cli:main"],
     },
 )

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 @dataclass
 class TelemetryCall:
     """Represents a telemetry operation with its details."""
+
     func: str
     line_number: int
     args: Optional[List[Any]] = None
@@ -23,9 +24,8 @@ class TelemetryCall:
         """
 
         return {
-            'func': self.func,
-            'line_number': self.line_number,
-            'args': self.args,
-            'keywords': self.keywords,
+            "func": self.func,
+            "line_number": self.line_number,
+            "args": self.args,
+            "keywords": self.keywords,
         }
-

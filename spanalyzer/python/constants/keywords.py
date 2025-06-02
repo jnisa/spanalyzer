@@ -16,10 +16,10 @@ class PythonTelemetryKeywords(str, Enum):
     - Attributes
     - Events
     """
-    
+
     # Tracer Setup
     GET_TRACER = "get_tracer"
-    
+
     # Span Context
     START_AS_CURRENT_SPAN = "start_as_current_span"
     START_SPAN = "start_span"
@@ -27,11 +27,11 @@ class PythonTelemetryKeywords(str, Enum):
     # END_SPAN = "end"
     GET_CURRENT_SPAN = "get_current_span"
     USE_SPAN = "use_span"
-    
+
     # Attributes
     SET_ATTRIBUTE = "set_attribute"
     SET_ATTRIBUTES = "set_attributes"
-    
+
     # Exceptions and Error Capturing
     # TODO. add later on
     # RECORD_EXCEPTION = "record_exception"
@@ -40,7 +40,7 @@ class PythonTelemetryKeywords(str, Enum):
     ADD_EVENT = "add_event"
     ADD_EVENTS = "add_events"
 
-    # Create Instrumentation    
+    # Create Instrumentation
     ADD_COUNTER = "add"
 
     # Instrumentation
@@ -53,7 +53,7 @@ class PythonTelemetryKeywords(str, Enum):
         """
 
         return {member.value for member in cls}
-    
+
     @classmethod
     def get_attributes_structure(cls) -> Dict[str, List]:
         """
@@ -61,9 +61,9 @@ class PythonTelemetryKeywords(str, Enum):
         """
 
         return {
-            'tracers': [],
-            'spans': [],
-            'attributes': [],
-            'events': [],
-            'counter': [],
+            "tracers": [],
+            "spans": [],
+            "attributes": [],
+            "events": [],
+            "counter": [],
         }

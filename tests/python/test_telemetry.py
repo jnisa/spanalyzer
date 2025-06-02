@@ -6,21 +6,23 @@ from spanalyzer.constants.telemetry import TelemetryCall
 
 from spanalyzer.python.constants.keywords import PythonTelemetryKeywords
 
-class TestPythonTelemetryKeywords(TestCase):
 
+class TestPythonTelemetryKeywords(TestCase):
     def test_telemetry_call_dict(self):
         """
         Description: test the dictionary conversion of the TelemetryCall class.
         """
 
-        test_call = TelemetryCall(func='test_func', line_number=1, args=None, keywords=None)
+        test_call = TelemetryCall(
+            func="test_func", line_number=1, args=None, keywords=None
+        )
 
         actual = test_call.__dict__()
         expected = {
-            'func': 'test_func',
-            'line_number': 1,
-            'args': None,
-            'keywords': None,
+            "func": "test_func",
+            "line_number": 1,
+            "args": None,
+            "keywords": None,
         }
 
         self.assertEqual(actual, expected)
@@ -43,7 +45,7 @@ class TestPythonTelemetryKeywords(TestCase):
             "add_event",
             "add_events",
             "add",
-            "instrument"
+            "instrument",
         }
 
         self.assertEqual(actual, expected)

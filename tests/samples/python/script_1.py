@@ -2,7 +2,8 @@
 
 from opentelemetry import trace
 
-tracer = trace.get_tracer('script_1_tracer')
+tracer = trace.get_tracer("script_1_tracer")
+
 
 def random_function():
     """
@@ -10,7 +11,7 @@ def random_function():
     - span
     - span.set_attribute
     """
-    
-    with tracer.start_as_current_span('random_function') as span:
-        span.set_attribute('attribute_1', 'value_1')
-        span.set_attribute('attribute_2', 'value_2')
+
+    with tracer.start_as_current_span("random_function") as span:
+        span.set_attribute("attribute_1", "value_1")
+        span.set_attribute("attribute_2", "value_2")

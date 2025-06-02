@@ -2,6 +2,7 @@
 
 from enum import Enum
 
+
 class ExcludedPaths(str, Enum):
     """
     Default paths to exclude from code analysis.
@@ -14,13 +15,13 @@ class ExcludedPaths(str, Enum):
         GIT [str]: the path to the git
         INIT [str]: the path to the init
     """
-    
-    VENV = 'venv'
-    TESTS = 'tests'
-    NODE_MODULES = 'node_modules'
-    PYCACHE = '__pycache__'
-    GIT = '.git'
-    INIT = '__init__.py'
+
+    VENV = "venv"
+    TESTS = "tests"
+    NODE_MODULES = "node_modules"
+    PYCACHE = "__pycache__"
+    GIT = ".git"
+    INIT = "__init__.py"
 
     @classmethod
     def values(cls) -> set[str]:

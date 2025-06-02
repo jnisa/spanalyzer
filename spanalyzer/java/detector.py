@@ -14,6 +14,7 @@ from spanalyzer.utils.operations import remove_call_duplicates
 
 from spanalyzer.constants.telemetry import TelemetryCall
 
+
 class JavaTelemetryDetector:
     """
     This class sniffs for OpenTelemetry calls in Java code.
@@ -45,12 +46,12 @@ class JavaTelemetryDetector:
 
         self.attribute_operations = {
             JavaTelemetryKeywords.SET_ATTRIBUTE,
-            JavaTelemetryKeywords.SET_ATTRIBUTES
+            JavaTelemetryKeywords.SET_ATTRIBUTES,
         }
 
         self.event_operations = {
             JavaTelemetryKeywords.ADD_EVENT,
-            JavaTelemetryKeywords.ADD_EVENTS
+            JavaTelemetryKeywords.ADD_EVENTS,
         }
 
     def _extract_name_from_args(self, node: MethodInvocation) -> Optional[str]:
@@ -60,10 +61,10 @@ class JavaTelemetryDetector:
 
         if not node.arguments:
             return None
-        
+
         arg = node.arguments[0]
 
-        return arg.value if hasattr(arg, 'value') else str(arg)
+        return arg.value if hasattr(arg, "value") else str(arg)
 
     def call_switcher(self, method_name: str, node: MethodInvocation | ClassCreator):
         """
@@ -73,38 +74,58 @@ class JavaTelemetryDetector:
         match method_name:
             case _ if method_name in self.tracer_operations:
                 if name := self._extract_name_from_args(node):
-                    self.output['tracers'].append(TelemetryCall(
-                        func=name,
-                        line_number=getattr(node, 'position', None).line if node.position else -1
-                    ))
+                    self.output["tracers"].append(
+                        TelemetryCall(
+                            func=name,
+                            line_number=getattr(node, "position", None).line
+                            if node.position
+                            else -1,
+                        )
+                    )
 
             case _ if method_name in self.span_operations:
                 if name := self._extract_name_from_args(node):
-                    self.output['spans'].append(TelemetryCall(
-                        func=name,
-                        line_number=getattr(node, 'position', None).line if node.position else -1
-                    ))
+                    self.output["spans"].append(
+                        TelemetryCall(
+                            func=name,
+                            line_number=getattr(node, "position", None).line
+                            if node.position
+                            else -1,
+                        )
+                    )
 
             case _ if method_name in self.attribute_operations:
-                self.output['attributes'].append(TelemetryCall(
-                    func=method_name,
-                    line_number=getattr(node, 'position', None).line if node.position else -1,
-                    args=java_ast_extractor(node)
-                ))
+                self.output["attributes"].append(
+                    TelemetryCall(
+                        func=method_name,
+                        line_number=getattr(node, "position", None).line
+                        if node.position
+                        else -1,
+                        args=java_ast_extractor(node),
+                    )
+                )
 
             case _ if method_name in self.event_operations:
-                self.output['events'].append(TelemetryCall(
-                    func=method_name,
-                    line_number=getattr(node, 'position', None).line if node.position else -1,
-                    args=java_ast_extractor(node)
-                ))
+                self.output["events"].append(
+                    TelemetryCall(
+                        func=method_name,
+                        line_number=getattr(node, "position", None).line
+                        if node.position
+                        else -1,
+                        args=java_ast_extractor(node),
+                    )
+                )
 
             case JavaTelemetryKeywords.COUNTER_ADD:
-                self.output['counter'].append(TelemetryCall(
-                    func=method_name,
-                    line_number=getattr(node, 'position', None).line if node.position else -1,
-                    args=java_ast_extractor(node)
-                ))
+                self.output["counter"].append(
+                    TelemetryCall(
+                        func=method_name,
+                        line_number=getattr(node, "position", None).line
+                        if node.position
+                        else -1,
+                        args=java_ast_extractor(node),
+                    )
+                )
 
     def run(self, tree: Any) -> Dict:
         """
@@ -131,7 +152,11 @@ class JavaTelemetryDetector:
                 pass
 
         return {
-            key: (remove_call_duplicates(val) if isinstance(val, list) and any(isinstance(item, TelemetryCall) for item in val)
-                  else [])
+            key: (
+                remove_call_duplicates(val)
+                if isinstance(val, list)
+                and any(isinstance(item, TelemetryCall) for item in val)
+                else []
+            )
             for key, val in self.output.items()
         }

@@ -50,7 +50,11 @@ def java_ast_extractor(node: Any) -> Optional[Union[str, dict, list]]:
 
     match node:
         case Literal():
-            return node.value.strip('"').strip("'") if isinstance(node.value, str) else node.value
+            return (
+                node.value.strip('"').strip("'")
+                if isinstance(node.value, str)
+                else node.value
+            )
 
         case MemberReference():
             return node.member
@@ -64,14 +68,20 @@ def java_ast_extractor(node: Any) -> Optional[Union[str, dict, list]]:
                     else java_ast_extractor(node.qualifier)
                 ),
                 "arguments": [java_ast_extractor(arg) for arg in node.arguments],
-                "selectors": [java_ast_extractor(selector) for selector in node.selectors] if node.selectors else None,
+                "selectors": [
+                    java_ast_extractor(selector) for selector in node.selectors
+                ]
+                if node.selectors
+                else None,
             }
 
         case ClassCreator():
             return {
                 "type": java_ast_extractor(node.type),
                 "arguments": [java_ast_extractor(arg) for arg in node.arguments],
-                "body": [java_ast_extractor(body) for body in node.body] if node.body else None,
+                "body": [java_ast_extractor(body) for body in node.body]
+                if node.body
+                else None,
             }
 
         case Assignment():
@@ -103,7 +113,7 @@ def java_ast_extractor(node: Any) -> Optional[Union[str, dict, list]]:
                 "then_statement": java_ast_extractor(node.then_statement),
                 "else_statement": java_ast_extractor(node.else_statement),
             }
-        
+
         case ReturnStatement():
             return {
                 "expression": java_ast_extractor(node.expression),
@@ -115,7 +125,7 @@ def java_ast_extractor(node: Any) -> Optional[Union[str, dict, list]]:
                 "dimensions": java_ast_extractor(node.dimensions),
                 "initializer": java_ast_extractor(node.initializer),
             }
-        
+
         case StatementExpression():
             return {
                 "expression": java_ast_extractor(node.expression),
@@ -123,7 +133,6 @@ def java_ast_extractor(node: Any) -> Optional[Union[str, dict, list]]:
 
         case BlockStatement():
             return [java_ast_extractor(statement) for statement in node.statements]
-
 
         case _:
             return None

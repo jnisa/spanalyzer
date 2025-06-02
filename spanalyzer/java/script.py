@@ -7,13 +7,16 @@ from typing import Union
 from collections import namedtuple
 
 # TODO. if these are the same than the ones in python, we should move them to a shared module
-FunctionSpecs = namedtuple('FunctionSpecs', ['name', 'docstring', 'start_lineno', 'end_lineno'])
+FunctionSpecs = namedtuple(
+    "FunctionSpecs", ["name", "docstring", "start_lineno", "end_lineno"]
+)
+
 
 class JavaScriptSniffer:
     """
     This class will scrape all the code from a Java source file and return the list of functions (methods).
 
-    Additionally, it will capture features of those functions such as the JavaDoc comment (docstring), 
+    Additionally, it will capture features of those functions such as the JavaDoc comment (docstring),
     start and end lines.
 
     This will be used later on to determine the amount of telemetry calls in a script.
@@ -26,7 +29,7 @@ class JavaScriptSniffer:
         self.filename = filename
         self.functions_list = []
 
-        with open(self.filename, 'r') as f:
+        with open(self.filename, "r") as f:
             self.source_code = f.read()
             self.lines = self.source_code.splitlines()
 
@@ -65,7 +68,9 @@ class JavaScriptSniffer:
 
         closest_comment_line, comment_text = max(preceding_comments, key=lambda c: c[0])
 
-        if comment_text.strip().startswith("/**") and comment_text.strip().endswith("*/"):
+        if comment_text.strip().startswith("/**") and comment_text.strip().endswith(
+            "*/"
+        ):
             cleaned = comment_text.strip()[3:-2].strip()
             return cleaned
 
@@ -91,9 +96,9 @@ class JavaScriptSniffer:
 
         brace_count = 0
         in_method = False
-        for i, line in enumerate(self.lines[start_line - 1:], start=start_line):
-            brace_count += line.count('{')
-            brace_count -= line.count('}')
+        for i, line in enumerate(self.lines[start_line - 1 :], start=start_line):
+            brace_count += line.count("{")
+            brace_count -= line.count("}")
             if brace_count > 0:
                 in_method = True
             if in_method and brace_count == 0:
@@ -171,7 +176,7 @@ class JavaScriptSniffer:
                 name=node.name,
                 docstring=docstring,
                 start_lineno=start_line,
-                end_lineno=end_line
+                end_lineno=end_line,
             )
 
             self.functions_list.append(func_spec)
