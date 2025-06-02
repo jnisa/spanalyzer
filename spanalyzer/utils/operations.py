@@ -10,12 +10,15 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from spanalyzer.script import FunctionSpecs
+from spanalyzer.python.script import FunctionSpecs
+from spanalyzer.python.constants.keywords import PythonTelemetryKeywords
 
 from spanalyzer.constants.telemetry import TelemetryCall
-from spanalyzer.constants.telemetry import TelemetryKeywords
 
-def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Dict]) -> Dict:
+
+def conciliation(
+    functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Dict]
+) -> Dict:
     """
     Function that will be used to conciliate the functions and the telemetry details.
 
@@ -122,34 +125,33 @@ def conciliation(functions_lst: List[FunctionSpecs], telemetry_lst: Dict[str, Di
         """
 
         return value in range(function.start_lineno, function.end_lineno)
-    
-      
-    base_structure = deepcopy(TelemetryKeywords.get_attributes_structure())
+
+    base_structure = deepcopy(PythonTelemetryKeywords.get_attributes_structure())
 
     output = {
         **base_structure,
-        'functions': {
+        "functions": {
             func.name: {
-                'docstring': func.docstring,
+                "docstring": func.docstring,
                 **deepcopy(base_structure),
             }
             for func in functions_lst
-        }
+        },
     }
 
     for key, value in telemetry_lst.items():
         for item in value:
             matched = False
             for func in functions_lst:
-                if is_in_function(item['line_number'], func):
-                    output['functions'][func.name][key].append(item)
+                if is_in_function(item["line_number"], func):
+                    output["functions"][func.name][key].append(item)
                     matched = True
                     break
             if not matched:
                 output[key].append(item)
-        
+
     return filter_empty_dict(output)
-        
+
 
 def write_json(data: Dict, path: str):
     """
@@ -160,7 +162,7 @@ def write_json(data: Dict, path: str):
         path [str]: path to the json file
     """
 
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         json.dump(data, f, indent=4)
 
 
@@ -224,7 +226,8 @@ def remove_call_duplicates(lst: List[TelemetryCall]) -> List[TelemetryCall]:
 
     return list(call_per_line.values())
 
-def folder_trim(lst: List[Dict], folder_key: str = 'script') -> List[Dict]:
+
+def folder_trim(lst: List[Dict], folder_key: str = "script") -> List[Dict]:
     """
     Remove the folder from the script path.
 
@@ -267,7 +270,7 @@ def folder_trim(lst: List[Dict], folder_key: str = 'script') -> List[Dict]:
         common_parts = os.path.commonprefix(split_paths)
 
         return os.sep.join(common_parts)
-    
+
     def trim(path: str, base_folder: str) -> str:
         """
         Trim the path to the base folder.
@@ -286,15 +289,11 @@ def folder_trim(lst: List[Dict], folder_key: str = 'script') -> List[Dict]:
             'folder/subfolder/script.py'
         """
 
-        return path.replace(base_folder, '')
+        return path.replace(base_folder, "")
 
-    script_paths = [item['script'] for item in lst]
-    base_folder = os.sep.join(find_folder_to_keep(script_paths).split(os.sep)[:-1]) + os.sep
+    script_paths = [item["script"] for item in lst]
+    base_folder = (
+        os.sep.join(find_folder_to_keep(script_paths).split(os.sep)[:-1]) + os.sep
+    )
 
-    return [
-        {
-            **item,
-            'script': trim(item['script'], base_folder)
-        }
-        for item in lst
-    ]
+    return [{**item, "script": trim(item["script"], base_folder)} for item in lst]

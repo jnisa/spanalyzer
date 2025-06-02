@@ -2,34 +2,38 @@
 
 from unittest import TestCase
 
-from spanalyzer.constants.telemetry import TelemetryKeywords
 from spanalyzer.constants.telemetry import TelemetryCall
-class TestTelemetryKeywords(TestCase):
 
+from spanalyzer.python.constants.keywords import PythonTelemetryKeywords
+
+
+class TestPythonTelemetryKeywords(TestCase):
     def test_telemetry_call_dict(self):
         """
         Description: test the dictionary conversion of the TelemetryCall class.
         """
 
-        test_call = TelemetryCall(func='test_func', line_number=1, args=None, keywords=None)
+        test_call = TelemetryCall(
+            func="test_func", line_number=1, args=None, keywords=None
+        )
 
         actual = test_call.__dict__()
         expected = {
-            'func': 'test_func',
-            'line_number': 1,
-            'args': None,
-            'keywords': None,
+            "func": "test_func",
+            "line_number": 1,
+            "args": None,
+            "keywords": None,
         }
 
         self.assertEqual(actual, expected)
 
     def test_telemetry_keywords_values(self):
         """
-        Description: check if the values of the TelemetryKeywords enum are duly encapsulated in
+        Description: check if the values of the PythonTelemetryKeywords enum are duly encapsulated in
         a set.
         """
 
-        actual = TelemetryKeywords.values()
+        actual = PythonTelemetryKeywords.values()
         expected = {
             "get_tracer",
             "start_as_current_span",
@@ -41,7 +45,7 @@ class TestTelemetryKeywords(TestCase):
             "add_event",
             "add_events",
             "add",
-            "instrument"
+            "instrument",
         }
 
         self.assertEqual(actual, expected)

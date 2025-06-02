@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from spanalyzer.reports import terminal_report
 
-class TestReports(TestCase):
 
+class TestReports(TestCase):
     def compare_terminal_reports(self, actual, expected):
         """
         Compares the actual and expected terminal reports.
@@ -14,12 +14,11 @@ class TestReports(TestCase):
         of the strings directly because of the formatting.
         """
 
-        actual = actual.split('\n')
-        expected = expected.split('\n')
+        actual = actual.split("\n")
+        expected = expected.split("\n")
 
         for a, e in zip(actual, expected):
             self.assertEqual(a, e)
-        
 
     def test_detailed_report_basic(self):
         """
@@ -48,7 +47,15 @@ class TestReports(TestCase):
         """
 
         test_report = [
-            {'script': 'test_program.py', 'spans': True, 'traces': True, 'metrics': True, 'events': True, 'attributes': True, 'coverage': 100}
+            {
+                "script": "test_program.py",
+                "spans": True,
+                "traces": True,
+                "metrics": True,
+                "events": True,
+                "attributes": True,
+                "coverage": 100,
+            }
         ]
 
         actual = terminal_report(test_report)
@@ -65,9 +72,33 @@ test_program.py           ✓        ✓         ✓          ✓         ✓   
         """
 
         test_report = [
-            {'name': 'program_1.py', 'attribute_1': True, 'attribute_2': True, 'attribute_3': False, 'attribute_4': True, 'attribute_5': False, 'attribute_6': 74},
-            {'name': 'program_2.py', 'attribute_1': False, 'attribute_2': False, 'attribute_3': False, 'attribute_4': True, 'attribute_5': True, 'attribute_6': 63},
-            {'name': 'program_3.py', 'attribute_1': True, 'attribute_2': True, 'attribute_3': True, 'attribute_4': True, 'attribute_5': True, 'attribute_6': 82},
+            {
+                "name": "program_1.py",
+                "attribute_1": True,
+                "attribute_2": True,
+                "attribute_3": False,
+                "attribute_4": True,
+                "attribute_5": False,
+                "attribute_6": 74,
+            },
+            {
+                "name": "program_2.py",
+                "attribute_1": False,
+                "attribute_2": False,
+                "attribute_3": False,
+                "attribute_4": True,
+                "attribute_5": True,
+                "attribute_6": 63,
+            },
+            {
+                "name": "program_3.py",
+                "attribute_1": True,
+                "attribute_2": True,
+                "attribute_3": True,
+                "attribute_4": True,
+                "attribute_5": True,
+                "attribute_6": 82,
+            },
         ]
 
         actual = terminal_report(test_report)

@@ -1,4 +1,4 @@
-# Script containing all the logic around opentelemetry instrumentation
+# Script containing the logic that will be used to sniff the python scripts
 
 from typing import Union
 
@@ -11,10 +11,12 @@ from ast import FunctionDef
 
 from collections import namedtuple
 
-# TODO. add the telemetry specs of the call
-FunctionSpecs = namedtuple('FunctionSpecs', ['name', 'docstring', 'start_lineno', 'end_lineno'])
+FunctionSpecs = namedtuple(
+    "FunctionSpecs", ["name", "docstring", "start_lineno", "end_lineno"]
+)
 
-class ScriptSniffer(NodeVisitor):
+
+class PythonScriptSniffer(NodeVisitor):
     """
     This class will scrape all the code from a python script and return the list of functions.
 
@@ -28,7 +30,6 @@ class ScriptSniffer(NodeVisitor):
     """
 
     def __init__(self, filename: str):
-
         self.filename = filename
         self.functions_list = []
 
@@ -62,9 +63,9 @@ class ScriptSniffer(NodeVisitor):
         """
 
         has_docstring = lambda node: (
-            len(node.body) > 0 and
-            isinstance(node.body[0], Expr) and
-            isinstance(node.body[0].value, Str)
+            len(node.body) > 0
+            and isinstance(node.body[0], Expr)
+            and isinstance(node.body[0].value, Str)
         )
 
         if has_docstring(node):
@@ -84,7 +85,7 @@ class ScriptSniffer(NodeVisitor):
             name=node.name,
             docstring=self._has_docstring(node),
             start_lineno=node.lineno,
-            end_lineno=node.end_lineno
+            end_lineno=node.end_lineno,
         )
 
         self.functions_list.append(function_specs)
@@ -107,8 +108,7 @@ class ScriptSniffer(NodeVisitor):
         This will firstly parse the script and then visit all the nodes to capture the function definitions.
         """
 
-        with open(self.filename, 'r') as file:
+        with open(self.filename, "r") as file:
             tree = parse(file.read())
 
         self.visit(tree)
-        

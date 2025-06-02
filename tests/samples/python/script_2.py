@@ -90,7 +90,7 @@ def random_function_4():
     Random function demonstrating counter usage.
     """
 
-    # with tracer.start_as_current_span('random_function_4') as span:
+
     with tracer.use_span('last_function') as span:
         request_counter.add(1)
 
