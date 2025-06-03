@@ -8,7 +8,7 @@
 
   ![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)
   ![Tests](https://img.shields.io/badge/tests-62%20passed%2C%200%20failed-brightgreen)
-  ![Python Version](https://img.shields.io/badge/python-3.11.4-blue?logo=python&logoColor=white)
+  ![Python Version](https://img.shields.io/badge/python-3.10.16-blue?logo=python&logoColor=white)
 
 </div>
 
