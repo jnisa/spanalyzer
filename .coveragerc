@@ -1,0 +1,12 @@
+[run]
+source = .
+omit = tests/**,setup.py
+
+[report]
+omit = 
+    tests/**
+    setup.py
+    **/__init__.py
+    /opt/homebrew/*
+    ./tree/*
+    ./spanalyzer/cli.py
